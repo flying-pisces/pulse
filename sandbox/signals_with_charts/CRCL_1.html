@@ -1,0 +1,58 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>CRCL - IPO TODAY</title>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <style>
+            body { font-family: 'Segoe UI', sans-serif; background-color: #000; color: #fff; padding: 15px; max-width: 420px; margin: auto; }
+            .signal-card { background-color: #1a1a1a; padding: 16px; border-radius: 12px; border: 1px solid #2a2a2a; }
+            .price { color: #00ff88; font-weight: bold; }
+            .description { color: #aaa; }
+            .link { color: #00ff88; text-decoration: none; }
+          </style>
+        </head>
+        <body>
+          <div class="signal-card">
+            <div><b>IPO TODAY</b></div>
+            <div style="font-size:20px;">CRCL</div>
+            <div>Circle Internet Group</div>
+            <div class="price">$69.00 (+122.6%)</div>
+            <div>
+              Day 1 High: 223%<br>
+              Valuation: $6.8B<br>
+              Volume: 46M
+            </div>
+            <div class="description">Stablecoin leader 3x'd on debut. ARK bought $150M. Watch for dip to $60-65 for entry. Similar to Coinbase IPO pattern - expect volatility.
+                    
+                        IPO playbook →</div>
+            <a class="link" href="https://example.com/ipo-trading-strategy">
+                        IPO playbook →
+ →</a>
+          </div>
+
+          <canvas id="chart-crcl" style="margin-top:20px;height:150px;"></canvas>
+
+          <script>
+            const ctx = document.getElementById('chart-crcl').getContext('2d');
+            const chartData = {};
+            new Chart(ctx, {
+              type: 'line',
+              data: chartData,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false }
+                },
+                scales: {
+                  x: { display: false },
+                  y: { display: false }
+                }
+              }
+            });
+          </script>
+        </body>
+        </html>
+        
