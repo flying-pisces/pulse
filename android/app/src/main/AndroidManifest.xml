@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission is required for OAuth authentication -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="pulse"
+        android:label="Stock Signal: AI Trading Alert"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

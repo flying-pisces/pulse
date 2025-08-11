@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignalPro 3.0 - Trading Signals</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <title>Stock Signal: AI Trading Alert - Flutter App Demo</title>
     <style>
         * {
             margin: 0;
@@ -13,2171 +12,480 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000000;
-            color: #ffffff;
-            padding: 10px;
-            max-width: 420px;
-            margin: 0 auto;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
-        /* Header */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 5px;
-            margin-bottom: 15px;
+            text-align: center;
+            padding: 60px 0;
+            color: white;
         }
         
         .logo {
-            font-size: 22px;
-            font-weight: bold;
-            background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .yolo-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            background: linear-gradient(135deg, #ff00ff, #ff4757);
-            border-radius: 10px;
-            color: white;
-            -webkit-text-fill-color: white;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .notification-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            background: #ff4757;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        /* Category Pills */
-        .category-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 5px 0 15px;
-            margin-bottom: 15px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        
-        .category-scroll::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .category-pill {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-            background: #1a1a1a;
-            color: #888;
-            flex-shrink: 0;
-        }
-        
-        .category-pill.active {
-            background: #2a2a2a;
-            color: #fff;
-            border-color: #00ff88;
-        }
-        
-        .category-pill .count {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-left: 3px;
-        }
-        
-        /* Signal Cards */
-        .signals-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .signal-card {
-            background: #1a1a1a;
-            border-radius: 16px;
-            padding: 16px;
-            border: 1px solid #2a2a2a;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .signal-card.yolo {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d0d2d 100%);
-            border-color: #ff00ff;
-            animation: yolo-glow 3s ease-in-out infinite;
-        }
-        
-        @keyframes yolo-glow {
-            0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
-        }
-        
-        .signal-card.hot-ipo {
-            border-color: #ff4757;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d1515 100%);
-        }
-        
-        .signal-card.pre-market {
-            border-style: dashed;
-            border-color: #ffd93d;
-        }
-        
-        .signal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .ticker-group {
-            flex: 1;
-        }
-        
-        .ticker-main {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 4px;
-        }
-        
-        .ticker {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .strategy-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Strategy Badge Colors */
-        .crypto-play { background: #f7931a; color: #000; }
-        .option-spread { background: #e74c3c; }
-        .ipo-debut { background: linear-gradient(135deg, #ff4757, #ff6348); }
-        .stock-split { background: #3498db; }
-        .pre-market { background: #ffd93d; color: #000; }
-        .post-market { background: #95a5a6; }
-        .earnings-play { background: #9b59b6; }
-        .fda-event { background: #16a085; }
-        .dividend-play { background: #2980b9; }
-        .insider-buy { background: #8e44ad; }
-        .indicator-signal { background: #d35400; }
-        .overreaction { background: #27ae60; }
-        .prediction-mkt { background: #f39c12; }
-        .yolo-play { 
-            background: linear-gradient(135deg, #ff00ff, #ff4757); 
-            animation: color-shift 3s infinite;
-        }
-        
-        @keyframes color-shift {
-            0%, 100% { filter: hue-rotate(0deg); }
-            50% { filter: hue-rotate(30deg); }
-        }
-        
-        .company-name {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 6px;
-        }
-        
-        .price-row {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
-        
-        .price {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .change {
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .positive { color: #00ff88; }
-        .negative { color: #ff4757; }
-        
-        /* Mini Chart */
-        .chart-section {
-            height: 100px;
-            margin-bottom: 12px;
-            position: relative;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            padding: 8px;
-        }
-        
-        .chart-section::after {
-            content: '';
-            position: absolute;
-            top: 10%;
-            left: 50%;
-            width: 1px;
-            height: 80%;
-            background: rgba(255, 255, 255, 0.2);
-            border-left: 1px dashed rgba(255, 255, 255, 0.3);
-        }
-        
-        .event-label {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 10px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10;
-        }
-        
-        .prediction-indicator {
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 9px;
-            color: #666;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        /* Key Stats */
-        .key-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .stat {
-            text-align: center;
-            padding: 8px 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-        }
-        
-        .stat-value {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        
-        .stat-label {
-            font-size: 10px;
-            color: #666;
-            text-transform: uppercase;
-        }
-        
-        /* Strategy Info */
-        .strategy-info {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        
-        .strategy-title {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #00d4ff;
-        }
-        
-        .strategy-desc {
-            font-size: 12px;
-            line-height: 1.4;
-            color: #aaa;
-            margin-bottom: 6px;
-        }
-        
-        .strategy-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #00ff88;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        
-        /* Signal Footer */
-        .signal-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: #666;
-        }
-        
-        .notify-toggle {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .toggle {
-            width: 36px;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .toggle.on {
-            background: #00ff88;
-        }
-        
-        .toggle-knob {
-            width: 16px;
-            height: 16px;
+            width: 80px;
+            height: 80px;
             background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s;
-        }
-        
-        .toggle.on .toggle-knob {
-            transform: translateX(16px);
-        }
-        
-        /* Result Cards */
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .result-badge {
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 600;
+            border-radius: 20px;
+            margin: 0 auto 20px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            font-size: 40px;
+            color: #2563EB;
         }
         
-        .result-success {
-            background: linear-gradient(135deg, #00ff88, #00d4ff);
-            color: #000;
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
         }
         
-        .result-failed {
-            background: linear-gradient(135deg, #ff4757, #ff6348);
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
         }
         
-        .result-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        
-        .result-stat {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .result-summary {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 11px;
-            line-height: 1.4;
-            color: #aaa;
-        }
-        
-        /* Tab Navigation */
-        .tabs {
-            display: flex;
-            background: #1a1a1a;
-            padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #666;
-            position: relative;
-        }
-        
-        .tab.active {
-            background: #2a2a2a;
-            color: #fff;
-        }
-        
-        .tab-count {
-            position: absolute;
-            top: 4px;
-            right: 8px;
-            background: #ff4757;
-            color: white;
-            font-size: 9px;
-            padding: 1px 5px;
-            border-radius: 8px;
-        }
-        
-        /* Loading State */
-        .loading {
-            text-align: center;
+        .demo-section {
+            background: white;
+            border-radius: 20px;
             padding: 40px;
-            color: #666;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #333;
-            border-top-color: #00ff88;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+        .section-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
         }
         
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .feature-card {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #2563EB;
         }
         
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        /* Special Effects */
-        .hot-label {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: linear-gradient(135deg, #ff4757, #ff6348);
-            color: white;
-            font-size: 9px;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 10px;
-            text-transform: uppercase;
-            animation: hot-pulse 2s infinite;
-        }
-        
-        @keyframes hot-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        /* Watch Mode */
-        @media (max-width: 200px) {
-            body {
-                padding: 8px;
-            }
-            
-            .signal-card {
-                padding: 10px;
-            }
-            
-            .ticker {
-                font-size: 16px;
-            }
-            
-            .price {
-                font-size: 18px;
-            }
-            
-            .chart-section {
-                height: 50px;
-            }
-            
-            .key-stats {
-                display: none;
-            }
-            
-            .strategy-info {
-                font-size: 10px;
-                padding: 8px;
-            }
-            
-            .strategy-desc {
-                display: none;
-            }
-        }
-        
-        /* Haptic Feedback Trigger */
-        .haptic {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-        
-        .empty-icon {
-            font-size: 48px;
+        .feature-icon {
+            font-size: 2rem;
             margin-bottom: 15px;
-            opacity: 0.3;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .feature-desc {
+            color: #64748b;
+            line-height: 1.6;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .tech-item {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .tech-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .tech-purpose {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .implementation-status {
+            background: #dcfce7;
+            border: 1px solid #22c55e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #15803d;
+            margin-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .status-check {
+            color: #22c55e;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .demo-login {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .demo-title {
+            font-weight: 600;
+            color: #1d4ed8;
+            margin-bottom: 10px;
+        }
+        
+        .credentials {
+            font-family: 'Courier New', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .file-structure {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        .folder {
+            color: #fbbf24;
+        }
+        
+        .file {
+            color: #34d399;
+        }
+        
+        .comment {
+            color: #9ca3af;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-section {
+                padding: 25px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            SignalPro
-            <span class="yolo-badge">YOLO!</span>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">📈</div>
+            <h1>Stock Signal: AI Trading Alert</h1>
+            <p class="subtitle">Professional Flutter Trading App - Complete Implementation</p>
         </div>
-        <div class="header-actions">
-            <div class="notification-bell haptic">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-                <div class="notification-dot"></div>
-            </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="haptic">
-                <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-            </svg>
-        </div>
-    </div>
-    
-    <div class="category-scroll">
-        <div class="category-pill active haptic" onclick="filterSignals('all')">All <span class="count">24</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('crypto')">Crypto <span class="count">3</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('options')">Options <span class="count">4</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('ipo')">IPO <span class="count">2</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('premarket')">Pre-Market <span class="count">2</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('splits')">Splits <span class="count">1</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('yolo')">YOLO! <span class="count">3</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('earnings')">Earnings <span class="count">2</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('dividend')">Dividend <span class="count">2</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('insider')">Insider <span class="count">2</span></div>
-        <div class="category-pill haptic" onclick="filterSignals('prediction')">Prediction <span class="count">2</span></div>
-    </div>
-    
-    <div class="tabs">
-        <div class="tab active haptic" onclick="showTab('active')">
-            Active
-            <span class="tab-count">12</span>
-        </div>
-        <div class="tab haptic" onclick="showTab('closed')">Closed</div>
-        <div class="tab haptic" onclick="showTab('watchlist')">Watchlist</div>
-    </div>
-    
-    <div class="signals-container" id="activeSignals">
-        
-        <!-- Hot IPO Play -->
-        <div class="signal-card hot-ipo fade-in" data-category="ipo">
-            <div class="hot-label">🔥 HOT</div>
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">CRCL</span>
-                        <span class="strategy-badge ipo-debut">IPO TODAY</span>
-                    </div>
-                    <div class="company-name">Circle Internet Group</div>
-                    <div class="price-row">
-                        <span class="price">$69.00</span>
-                        <span class="change positive">+122.6%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- App Overview -->
+        <div class="demo-section">
+            <h2 class="section-title">🚀 App Overview</h2>
+            <p>A comprehensive Flutter application for AI-powered trading signals, built with clean architecture, modern UI/UX, and production-ready features.</p>
             
-            <div class="chart-section">
-                <canvas id="chart-crcl"></canvas>
-                <div class="event-label">IPO $31 → $103 peak</div>
-                <div class="prediction-indicator">← now | prediction →</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">223%</div>
-                    <div class="stat-label">Day 1 High</div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI-Powered Signals</div>
+                    <div class="feature-desc">Real-time trading signals powered by advanced AI algorithms with confidence scoring and detailed analysis.</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">$6.8B</div>
-                    <div class="stat-label">Valuation</div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Smart Watchlist</div>
+                    <div class="feature-desc">Intelligent portfolio tracking with price alerts, custom notes, and comprehensive market data.</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">46M</div>
-                    <div class="stat-label">Volume</div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">Secure Authentication</div>
+                    <div class="feature-desc">Complete auth flow with social login, password recovery, and subscription management.</div>
                 </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Hot IPO Momentum Play</div>
-                <div class="strategy-desc">
-                    Stablecoin leader 3x'd on debut. ARK bought $150M. Watch for dip to $60-65 for entry. Similar to Coinbase IPO pattern - expect volatility.
-                    <a href="https://example.com/ipo-trading-strategy" class="strategy-link">
-                        IPO playbook →
-                    </a>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <div class="feature-title">Premium Features</div>
+                    <div class="feature-desc">Tiered subscription system with advanced analytics, unlimited signals, and priority support.</div>
                 </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>15 min ago</span>
             </div>
         </div>
-        
-        <!-- YOLO Crypto Options -->
-        <div class="signal-card yolo fade-in" data-category="crypto,options,yolo">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">BTC</span>
-                        <span class="strategy-badge yolo-play">YOLO CALLS</span>
-                    </div>
-                    <div class="company-name">Bitcoin 150K Moonshot</div>
-                    <div class="price-row">
-                        <span class="price">$105,456</span>
-                        <span class="change positive">+3.8%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Technical Implementation -->
+        <div class="demo-section">
+            <h2 class="section-title">🛠️ Technical Stack</h2>
+            <p>Built with modern Flutter architecture and industry best practices.</p>
             
-            <div class="chart-section">
-                <canvas id="chart-btc"></canvas>
-                <div class="event-label">Kalshi 75% → 150K</div>
-                <div class="prediction-indicator">← history | prediction bands →</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">250%</div>
-                    <div class="stat-label">Max Gain</div>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-name">Flutter 3.8+</div>
+                    <div class="tech-purpose">Cross-platform mobile framework</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value negative">-100%</div>
-                    <div class="stat-label">Max Loss</div>
+                <div class="tech-item">
+                    <div class="tech-name">Riverpod 2.5</div>
+                    <div class="tech-purpose">State management solution</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value">$850</div>
-                    <div class="stat-label">Per Call</div>
+                <div class="tech-item">
+                    <div class="tech-name">GoRouter 14.2</div>
+                    <div class="tech-purpose">Declarative navigation</div>
                 </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Dec 150K Call Options</div>
-                <div class="strategy-desc">
-                    Kalshi shows 75% odds of 150K by Q4. Buy $130K calls for December. High risk, high reward - only risk what you can lose! 
-                    <a href="https://kalshi.com/markets/kxbtcmax150" class="strategy-link">
-                        View odds →
-                    </a>
+                <div class="tech-item">
+                    <div class="tech-name">Dio 5.4</div>
+                    <div class="tech-purpose">HTTP client for API calls</div>
                 </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
+                <div class="tech-item">
+                    <div class="tech-name">Hive 2.2</div>
+                    <div class="tech-purpose">Local storage solution</div>
                 </div>
-                <span>1 hour ago</span>
+                <div class="tech-item">
+                    <div class="tech-name">FL Chart 0.68</div>
+                    <div class="tech-purpose">Beautiful data visualization</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Firebase</div>
+                    <div class="tech-purpose">Push notifications & analytics</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Material 3</div>
+                    <div class="tech-purpose">Modern design system</div>
+                </div>
             </div>
         </div>
-        
-        <!-- Pre-Market Mover -->
-        <div class="signal-card pre-market fade-in" data-category="premarket">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">NVDA</span>
-                        <span class="strategy-badge pre-market">PRE-MKT</span>
-                    </div>
-                    <div class="company-name">Nvidia Pre-Market Surge</div>
-                    <div class="price-row">
-                        <span class="price">$1,125.50</span>
-                        <span class="change positive">+5.2%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Implementation Status -->
+        <div class="demo-section">
+            <h2 class="section-title">✅ Implementation Status</h2>
             
-            <div class="chart-section">
-                <canvas id="chart-nvda"></canvas>
-                <div class="event-label">Taiwan news 4AM</div>
-                <div class="prediction-indicator">← pre-mkt | prediction →</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">+6.8%</div>
-                    <div class="stat-label">Pre-Mkt</div>
+            <div class="implementation-status">
+                <div class="status-title">Completed Features:</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Complete project structure with clean architecture
                 </div>
-                <div class="stat">
-                    <div class="stat-value">2.5M</div>
-                    <div class="stat-label">Volume</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Material 3 theme system with light/dark mode
                 </div>
-                <div class="stat">
-                    <div class="stat-value">9:28</div>
-                    <div class="stat-label">Entry</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Splash screen with animated branding
                 </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Pre-Market Gap & Go</div>
-                <div class="strategy-desc">
-                    TSMC production boost news. Pre-market up 6.8% on heavy volume. Buy at 9:28-9:30 for opening momentum. Set stop at pre-market low.
-                    <a href="https://example.com/premarket-trading" class="strategy-link">
-                        Pre-market guide →
-                    </a>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Interactive onboarding flow (4 screens)
                 </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Authentication system (Login/Register/Forgot Password)
                 </div>
-                <span>Pre-market</span>
-            </div>
-        </div>
-        
-        <!-- Stock Split Play -->
-        <div class="signal-card fade-in" data-category="splits">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">AMZN</span>
-                        <span class="strategy-badge stock-split">20:1 SPLIT</span>
-                    </div>
-                    <div class="company-name">Amazon Split Announced</div>
-                    <div class="price-row">
-                        <span class="price">$3,245.00</span>
-                        <span class="change positive">+8.2%</span>
-                    </div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Subscription plan selection with pricing tiers
                 </div>
-            </div>
-            
-            <div class="chart-section">
-                <canvas id="chart-amzn"></canvas>
-                <div class="event-label">Split 8/15</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value">20:1</div>
-                    <div class="stat-label">Ratio</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Main dashboard with bottom navigation
                 </div>
-                <div class="stat">
-                    <div class="stat-value positive">+15%</div>
-                    <div class="stat-label">Avg Run</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Trading signals feed with filtering
                 </div>
-                <div class="stat">
-                    <div class="stat-value">28d</div>
-                    <div class="stat-label">To Split</div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Watchlist management with alerts
                 </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Pre-Split Momentum</div>
-                <div class="strategy-desc">
-                    20:1 split announced. Historical data shows 15% avg gain from announcement to split date. Buy shares or Aug calls. Retail FOMO incoming.
-                    <a href="https://example.com/stock-split-strategy" class="strategy-link">
-                        Split history →
-                    </a>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    User profile and settings
                 </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Riverpod state management setup
                 </div>
-                <span>2 hours ago</span>
+                <div class="status-item">
+                    <span class="status-check">✓</span>
+                    Reusable UI components library
+                </div>
             </div>
         </div>
-        
-        <!-- Option Credit Spread -->
-        <div class="signal-card fade-in" data-category="options">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">TSLA</span>
-                        <span class="strategy-badge option-spread">PUT SPREAD</span>
-                    </div>
-                    <div class="company-name">Tesla Iron Condor</div>
-                    <div class="price-row">
-                        <span class="price">$245.80</span>
-                        <span class="change negative">-1.2%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Demo Access -->
+        <div class="demo-section">
+            <h2 class="section-title">🎯 Demo Access</h2>
+            <p>Test the app with the following demo credentials:</p>
             
-            <div class="chart-section">
-                <canvas id="chart-tsla"></canvas>
-                <div class="event-label">IV Crush Play</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value">$3.20</div>
-                    <div class="stat-label">Credit</div>
+            <div class="demo-login">
+                <div class="demo-title">Demo Login Credentials:</div>
+                <div class="credentials">
+Email: demo@stocksignal.ai
+Password: password
                 </div>
-                <div class="stat">
-                    <div class="stat-value">72%</div>
-                    <div class="stat-label">PoP</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">21d</div>
-                    <div class="stat-label">DTE</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Sell 240/235 Put Spread</div>
-                <div class="strategy-desc">
-                    Post-earnings IV crush. Sell 240/235 put spread for $3.20 credit. 72% probability of profit. Max loss $180. Range-bound expected.
-                    <a href="https://example.com/credit-spreads" class="strategy-link">
-                        Spread calculator →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>3 hours ago</span>
+                <p style="margin-top: 10px; color: #64748b;">Use these credentials to explore all app features including premium subscription benefits.</p>
             </div>
         </div>
-        
-        <!-- Crypto DeFi Play -->
-        <div class="signal-card fade-in" data-category="crypto">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">ETH</span>
-                        <span class="strategy-badge crypto-play">DEFI SURGE</span>
-                    </div>
-                    <div class="company-name">Ethereum Staking Play</div>
-                    <div class="price-row">
-                        <span class="price">$3,856</span>
-                        <span class="change positive">+4.5%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Architecture -->
+        <div class="demo-section">
+            <h2 class="section-title">🏗️ Project Structure</h2>
+            <p>Clean architecture with separation of concerns:</p>
             
-            <div class="chart-section">
-                <canvas id="chart-eth"></canvas>
-                <div class="event-label">Shanghai Fork</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">5.2%</div>
-                    <div class="stat-label">APY</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">$4.2K</div>
-                    <div class="stat-label">Target</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">85</div>
-                    <div class="stat-label">RSI</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Stake & Trade Momentum</div>
-                <div class="strategy-desc">
-                    Shanghai upgrade complete. Staking APY 5.2% + price appreciation. Buy spot ETH or ETHE. DeFi TVL surging, institutions accumulating.
-                    <a href="https://example.com/eth-staking" class="strategy-link">
-                        Staking guide →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>4 hours ago</span>
+            <div class="file-structure">
+lib/
+├── <span class="folder">core/</span>                    <span class="comment"># Core utilities and constants</span>
+│   ├── <span class="folder">constants/</span>           <span class="comment"># App constants</span>
+│   ├── <span class="folder">theme/</span>               <span class="comment"># Material 3 theme</span>
+│   ├── <span class="folder">navigation/</span>          <span class="comment"># GoRouter setup</span>
+│   └── <span class="folder">utils/</span>               <span class="comment"># Helper utilities</span>
+├── <span class="folder">data/</span>                    <span class="comment"># Data layer</span>
+│   ├── <span class="folder">datasources/</span>         <span class="comment"># API and local data sources</span>
+│   ├── <span class="folder">models/</span>              <span class="comment"># Data models</span>
+│   └── <span class="folder">repositories/</span>        <span class="comment"># Repository implementations</span>
+├── <span class="folder">domain/</span>                  <span class="comment"># Business logic layer</span>
+│   ├── <span class="folder">entities/</span>            <span class="comment"># Core business entities</span>
+│   ├── <span class="folder">repositories/</span>        <span class="comment"># Repository interfaces</span>
+│   └── <span class="folder">usecases/</span>            <span class="comment"># Business use cases</span>
+├── <span class="folder">presentation/</span>            <span class="comment"># UI layer</span>
+│   ├── <span class="folder">pages/</span>               <span class="comment"># Screen pages</span>
+│   │   ├── <span class="folder">splash/</span>          <span class="comment"># Animated splash screen</span>
+│   │   ├── <span class="folder">onboarding/</span>      <span class="comment"># Feature introduction flow</span>
+│   │   ├── <span class="folder">auth/</span>            <span class="comment"># Authentication screens</span>
+│   │   ├── <span class="folder">subscription/</span>    <span class="comment"># Pricing and plans</span>
+│   │   ├── <span class="folder">dashboard/</span>       <span class="comment"># Main app dashboard</span>
+│   │   ├── <span class="folder">signals/</span>         <span class="comment"># Trading signals feed</span>
+│   │   ├── <span class="folder">watchlist/</span>       <span class="comment"># Portfolio tracking</span>
+│   │   └── <span class="folder">profile/</span>         <span class="comment"># User settings</span>
+│   ├── <span class="folder">widgets/</span>             <span class="comment"># Reusable UI components</span>
+│   └── <span class="folder">providers/</span>           <span class="comment"># Riverpod state providers</span>
+└── <span class="file">main.dart</span>                  <span class="comment"># App entry point</span>
             </div>
         </div>
-        
-        <!-- FDA Event YOLO -->
-        <div class="signal-card yolo fade-in" data-category="fda,yolo">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">SAVA</span>
-                        <span class="strategy-badge fda-event">FDA PDUFA</span>
-                    </div>
-                    <div class="company-name">Cassava Sciences</div>
-                    <div class="price-row">
-                        <span class="price">$42.15</span>
-                        <span class="change positive">+12.3%</span>
-                    </div>
-                </div>
-            </div>
+
+        <!-- Key Features -->
+        <div class="demo-section">
+            <h2 class="section-title">🌟 Key Features Implemented</h2>
             
-            <div class="chart-section">
-                <canvas id="chart-sava"></canvas>
-                <div class="event-label">FDA 7/28</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">+180%</div>
-                    <div class="stat-label">If Pass</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value negative">-65%</div>
-                    <div class="stat-label">If Fail</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">220%</div>
-                    <div class="stat-label">IV</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Binary FDA Event - YOLO!</div>
-                <div class="strategy-desc">
-                    Alzheimer's drug PDUFA date 7/28. Buy OTM calls for 10x potential. Ultra high risk - total loss possible. Size accordingly!
-                    <a href="https://example.com/fda-calendar" class="strategy-link">
-                        FDA calendar →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">Modern UI/UX</div>
+                    <div class="feature-desc">
+                        • Material 3 design system<br>
+                        • Smooth animations with Flutter Animate<br>
+                        • Responsive layout for all screen sizes<br>
+                        • Dark/light theme support
                     </div>
                 </div>
-                <span>5 hours ago</span>
-            </div>
-        </div>
-        
-        <!-- Post-Market Earnings -->
-        <div class="signal-card fade-in" data-category="earnings,postmarket">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">GOOGL</span>
-                        <span class="strategy-badge post-market">POST-ER</span>
-                    </div>
-                    <div class="company-name">Google Post-Earnings</div>
-                    <div class="price-row">
-                        <span class="price">$178.25</span>
-                        <span class="change positive">+8.5%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chart-section">
-                <canvas id="chart-googl"></canvas>
-                <div class="event-label">Beat +15%</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value positive">+11%</div>
-                    <div class="stat-label">AH Move</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">$185</div>
-                    <div class="stat-label">Target</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">5.2M</div>
-                    <div class="stat-label">AH Vol</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Post-Earnings Momentum</div>
-                <div class="strategy-desc">
-                    Crushed earnings, raised guidance. After-hours up 11%. Buy at open for continuation. Historical 3-day momentum after beats averages +5%.
-                    <a href="https://example.com/earnings-momentum" class="strategy-link">
-                        ER playbook →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>After hours</span>
-            </div>
-        </div>
-        
-        <!-- Unusual Options Activity -->
-        <div class="signal-card fade-in" data-category="options,insider">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">AMD</span>
-                        <span class="strategy-badge indicator-signal">UNUSUAL OPT</span>
-                    </div>
-                    <div class="company-name">Unusual Call Buying</div>
-                    <div class="price-row">
-                        <span class="price">$185.40</span>
-                        <span class="change positive">+2.1%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chart-section">
-                <canvas id="chart-amd"></canvas>
-                <div class="event-label">10K calls</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value">$2.5M</div>
-                    <div class="stat-label">Premium</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">10x</div>
-                    <div class="stat-label">Avg Vol</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">$200</div>
-                    <div class="stat-label">Strike</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Follow the Smart Money</div>
-                <div class="strategy-desc">
-                    10,000 Aug $200 calls bought for $2.5M. 10x normal volume. Someone knows something. Follow with smaller position or spreads.
-                    <a href="https://example.com/options-flow" class="strategy-link">
-                        Flow data →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>30 min ago</span>
-            </div>
-        </div>
-        
-        <!-- Meme Stock YOLO -->
-        <div class="signal-card yolo fade-in" data-category="yolo">
-            <div class="signal-header">
-                <div class="ticker-group">
-                    <div class="ticker-main">
-                        <span class="ticker">GME</span>
-                        <span class="strategy-badge yolo-play">SQUEEZE</span>
-                    </div>
-                    <div class="company-name">GameStop Gamma Ramp</div>
-                    <div class="price-row">
-                        <span class="price">$45.20</span>
-                        <span class="change positive">+35.2%</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chart-section">
-                <canvas id="chart-gme"></canvas>
-                <div class="event-label">SI 140%</div>
-                <div class="prediction-indicator">← squeeze | moon bands →</div>
-            </div>
-            
-            <div class="key-stats">
-                <div class="stat">
-                    <div class="stat-value">140%</div>
-                    <div class="stat-label">Short %</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value positive">+420%</div>
-                    <div class="stat-label">Target</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value">💎🙌</div>
-                    <div class="stat-label">Hands</div>
-                </div>
-            </div>
-            
-            <div class="strategy-info">
-                <div class="strategy-title">Diamond Hands Squeeze Play</div>
-                <div class="strategy-desc">
-                    Short interest 140%, cost to borrow 85%. Gamma ramp building. Pure YOLO - lottery ticket only! Not investment advice. Apes together strong! 🚀
-                    <a href="https://reddit.com/r/wallstreetbets" class="strategy-link">
-                        Join apes →
-                    </a>
-                </div>
-            </div>
-            
-            <div class="signal-footer">
-                <div class="notify-toggle">
-                    <span>Exit alert</span>
-                    <div class="toggle on haptic" onclick="toggleNotify(this)">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <span>TO THE MOON!</span>
-            </div>
-        </div>
-        
-    </div>
-    
-    <!-- Closed Positions Tab -->
-    <div class="signals-container" id="closedSignals" style="display: none;">
-        
-        <!-- Successful IPO Trade -->
-        <div class="signal-card fade-in">
-            <div class="result-header">
-                <div class="ticker-group">
-                    <div class="ticker">CRWV</div>
-                    <div class="company-name">CoreWeave IPO - Closed</div>
-                </div>
-                <div class="result-badge result-success">
-                    ✓ +312%
-                </div>
-            </div>
-            
-            <div class="result-stats">
-                <div class="result-stat">
-                    <div class="stat-label">Entry</div>
-                    <div class="stat-value">$25.00</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Exit</div>
-                    <div class="stat-value">$103.00</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Duration</div>
-                    <div class="stat-value">3 days</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Return</div>
-                    <div class="stat-value positive">+312%</div>
-                </div>
-            </div>
-            
-            <div class="result-summary">
-                <strong>AI Infrastructure IPO:</strong> Nailed the hot IPO play! Bought at $25 on debut, sold at $103 three days later. Perfect execution of IPO momentum strategy.
-            </div>
-        </div>
-        
-        <!-- Failed YOLO Trade -->
-        <div class="signal-card fade-in">
-            <div class="result-header">
-                <div class="ticker-group">
-                    <div class="ticker">BBBY</div>
-                    <div class="company-name">Bed Bath YOLO - Failed</div>
-                </div>
-                <div class="result-badge result-failed">
-                    ✗ -100%
-                </div>
-            </div>
-            
-            <div class="result-stats">
-                <div class="result-stat">
-                    <div class="stat-label">Entry</div>
-                    <div class="stat-value">$850</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Exit</div>
-                    <div class="stat-value">$0</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Duration</div>
-                    <div class="stat-value">Expired</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Loss</div>
-                    <div class="stat-value negative">-100%</div>
-                </div>
-            </div>
-            
-            <div class="result-summary">
-                <strong>YOLO Call Options:</strong> OTM calls expired worthless after bankruptcy filing. Risk management worked - only risked 0.5% of portfolio on this lottery ticket.
-            </div>
-        </div>
-        
-        <!-- Successful Option Spread -->
-        <div class="signal-card fade-in">
-            <div class="result-header">
-                <div class="ticker-group">
-                    <div class="ticker">SPX</div>
-                    <div class="company-name">Iron Condor - Success</div>
-                </div>
-                <div class="result-badge result-success">
-                    ✓ +85%
-                </div>
-            </div>
-            
-            <div class="result-stats">
-                <div class="result-stat">
-                    <div class="stat-label">Credit</div>
-                    <div class="stat-value">$4.20</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Closed</div>
-                    <div class="stat-value">$0.65</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Duration</div>
-                    <div class="stat-value">18 days</div>
-                </div>
-                <div class="result-stat">
-                    <div class="stat-label">Profit</div>
-                    <div class="stat-value positive">$355</div>
-                </div>
-            </div>
-            
-            <div class="result-summary">
-                <strong>Theta Gang Win:</strong> SPX stayed within expected range. Closed iron condor early at 85% max profit. Consistent income strategy working as designed.
-            </div>
-        </div>
-        
-    </div>
-    
-    <!-- Watchlist Tab -->
-    <div class="signals-container" id="watchlistSignals" style="display: none;">
-        <div class="empty-state">
-            <div class="empty-icon">👀</div>
-            <h3>No signals in watchlist</h3>
-            <p>Swipe right on any signal to add to watchlist</p>
-        </div>
-    </div>
-    
-    <script>
-        // Prediction Bands: Historical data shown as solid line, future projections shown as bands
-        // Upper band = bullish scenario, Middle = base case, Lower = bearish scenario
-        // All bands diverge from current price point to show range of possibilities
-        
-        // Mini chart configuration with prediction bands support
-        const miniChartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false }
-            },
-            scales: {
-                x: { 
-                    display: false,
-                    grid: { display: false }
-                },
-                y: { 
-                    display: false,
-                    grid: { display: false }
-                }
-            },
-            elements: {
-                point: { radius: 0 },
-                line: { borderWidth: 2 }
-            },
-            interaction: {
-                intersect: false
-            }
-        };
-        
-        // Initialize charts with prediction bands
-        function initCharts() {
-            // CRCL IPO Chart with prediction bands
-            const crclCtx = document.getElementById('chart-crcl')?.getContext('2d');
-            if (crclCtx) {
-                const currentPrice = 69;
-                new Chart(crclCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => {
-                                    if (i < 2) return 31;
-                                    if (i < 4) return 31 + (69 - 31) * (i - 2) / 2;
-                                    return 69 + Math.sin((i - 4) * 0.5) * 5;
-                                }).concat(Array(20).fill(null)),
-                                borderColor: '#ff4757',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Upper Band',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => currentPrice + i * 2 + Math.pow(i, 1.2))
-                                ),
-                                borderColor: 'rgba(255, 71, 87, 0.3)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(255, 71, 87, 0.1)'
-                            },
-                            {
-                                label: 'Base Case',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => currentPrice + i * 0.5)
-                                ),
-                                borderColor: '#ff4757',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Lower Band',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => currentPrice - i * 1.5 - Math.pow(i, 1.1))
-                                ),
-                                borderColor: 'rgba(255, 71, 87, 0.3)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // BTC YOLO Chart with prediction bands
-            const btcCtx = document.getElementById('chart-btc')?.getContext('2d');
-            if (btcCtx) {
-                const currentBTC = 105456;
-                new Chart(btcCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    98000 + i * 350 + Math.sin(i * 0.3) * 1000
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#ff00ff',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Bull Case (150K)',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => {
-                                        const progress = i / 20;
-                                        return currentBTC + (150000 - currentBTC) * Math.pow(progress, 0.8);
-                                    })
-                                ),
-                                borderColor: 'rgba(0, 255, 136, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(0, 255, 136, 0.1)'
-                            },
-                            {
-                                label: 'Base Case',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentBTC + i * 1500
-                                    )
-                                ),
-                                borderColor: '#ff00ff',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Bear Case',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentBTC - i * 800 - Math.pow(i, 1.2) * 100
-                                    )
-                                ),
-                                borderColor: 'rgba(255, 71, 87, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // NVDA Pre-market Chart with prediction bands
-            const nvdaCtx = document.getElementById('chart-nvda')?.getContext('2d');
-            if (nvdaCtx) {
-                const currentNVDA = 1125.50;
-                new Chart(nvdaCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => {
-                                    if (i < 15) return 1070 + i * 3;
-                                    return 1070 + 15 * 3 + (i - 15) * 8;
-                                }).concat(Array(20).fill(null)),
-                                borderColor: '#ffd93d',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Upper Target',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentNVDA + i * 3 + Math.pow(i, 1.1) * 0.5
-                                    )
-                                ),
-                                borderColor: 'rgba(255, 217, 61, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(255, 217, 61, 0.1)'
-                            },
-                            {
-                                label: 'Expected',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentNVDA + i * 1.5
-                                    )
-                                ),
-                                borderColor: '#ffd93d',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Support',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentNVDA - i * 0.8 - Math.pow(i, 1.05) * 0.3
-                                    )
-                                ),
-                                borderColor: 'rgba(255, 217, 61, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // Initialize other charts...
-            initializeRemainingCharts();
-        }
-        
-        function initializeRemainingCharts() {
-            // AMZN Split Chart with prediction bands
-            const amznCtx = document.getElementById('chart-amzn')?.getContext('2d');
-            if (amznCtx) {
-                const currentAMZN = 3245;
-                new Chart(amznCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    3000 + i * 12 + Math.sin(i * 0.2) * 15
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#3498db',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Split Rally Upper',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentAMZN + i * 5 + Math.pow(i, 1.15) * 2
-                                    )
-                                ),
-                                borderColor: 'rgba(52, 152, 219, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(52, 152, 219, 0.1)'
-                            },
-                            {
-                                label: 'Expected Path',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentAMZN + i * 3
-                                    )
-                                ),
-                                borderColor: '#3498db',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Support',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentAMZN + i * 1 - Math.pow(i, 1.1) * 0.5
-                                    )
-                                ),
-                                borderColor: 'rgba(52, 152, 219, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // TSLA Options Chart with prediction bands
-            const tslaCtx = document.getElementById('chart-tsla')?.getContext('2d');
-            if (tslaCtx) {
-                const currentTSLA = 245.80;
-                new Chart(tslaCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    250 + Math.sin(i * 0.3) * 5 - i * 0.2
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#e74c3c',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Max Profit Zone',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, () => 240)
-                                ),
-                                borderColor: 'rgba(0, 255, 136, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(0, 255, 136, 0.1)'
-                            },
-                            {
-                                label: 'Expected Range',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentTSLA + Math.sin(i * 0.5) * 3
-                                    )
-                                ),
-                                borderColor: '#e74c3c',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Break Even',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, () => 235)
-                                ),
-                                borderColor: 'rgba(231, 76, 60, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // ETH DeFi Chart with prediction bands
-            const ethCtx = document.getElementById('chart-eth')?.getContext('2d');
-            if (ethCtx) {
-                const currentETH = 3856;
-                new Chart(ethCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    3600 + i * 12 + Math.sin(i * 0.2) * 30
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#f7931a',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Bull Target',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentETH + i * 8 + Math.pow(i, 1.1) * 1.5
-                                    )
-                                ),
-                                borderColor: 'rgba(247, 147, 26, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(247, 147, 26, 0.1)'
-                            },
-                            {
-                                label: 'Base Case',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentETH + i * 4
-                                    )
-                                ),
-                                borderColor: '#f7931a',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Support',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentETH - i * 2 - Math.pow(i, 1.05) * 0.8
-                                    )
-                                ),
-                                borderColor: 'rgba(247, 147, 26, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // SAVA FDA Chart with prediction bands
-            const savaCtx = document.getElementById('chart-sava')?.getContext('2d');
-            if (savaCtx) {
-                const currentSAVA = 42.15;
-                new Chart(savaCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    35 + i * 0.35 + Math.random() * 2
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#16a085',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'FDA Approval',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => {
-                                        if (i < 10) return currentSAVA + i * 0.5;
-                                        return currentSAVA + 5 + (i - 10) * 8;
-                                    })
-                                ),
-                                borderColor: 'rgba(0, 255, 136, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(0, 255, 136, 0.1)'
-                            },
-                            {
-                                label: 'Base Case',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => currentSAVA)
-                                ),
-                                borderColor: '#16a085',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'FDA Rejection',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => {
-                                        if (i < 10) return currentSAVA - i * 0.5;
-                                        return currentSAVA - 5 - (i - 10) * 2;
-                                    })
-                                ),
-                                borderColor: 'rgba(255, 71, 87, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // GOOGL Earnings Chart with prediction bands
-            const googlCtx = document.getElementById('chart-googl')?.getContext('2d');
-            if (googlCtx) {
-                const currentGOOGL = 178.25;
-                new Chart(googlCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => {
-                                    if (i < 18) return 164 + i * 0.5;
-                                    return 173 + (i - 18) * 2.5;
-                                }).concat(Array(20).fill(null)),
-                                borderColor: '#95a5a6',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Momentum High',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGOOGL + i * 0.8 + Math.pow(i, 1.08) * 0.2
-                                    )
-                                ),
-                                borderColor: 'rgba(149, 165, 166, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(149, 165, 166, 0.1)'
-                            },
-                            {
-                                label: 'Target',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGOOGL + i * 0.4
-                                    )
-                                ),
-                                borderColor: '#95a5a6',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Support',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGOOGL - i * 0.2
-                                    )
-                                ),
-                                borderColor: 'rgba(149, 165, 166, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // AMD Options Flow Chart with prediction bands
-            const amdCtx = document.getElementById('chart-amd')?.getContext('2d');
-            if (amdCtx) {
-                const currentAMD = 185.40;
-                new Chart(amdCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => 
-                                    180 + Math.sin(i * 0.2) * 3 + i * 0.25
-                                ).concat(Array(20).fill(null)),
-                                borderColor: '#d35400',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Call Target',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => {
-                                        if (i < 5) return currentAMD + i * 2;
-                                        return currentAMD + 10 + (i - 5) * 0.5;
-                                    })
-                                ),
-                                borderColor: 'rgba(211, 84, 0, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(211, 84, 0, 0.1)'
-                            },
-                            {
-                                label: 'Expected',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentAMD + i * 0.8
-                                    )
-                                ),
-                                borderColor: '#d35400',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Stop Level',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, () => 180)
-                                ),
-                                borderColor: 'rgba(211, 84, 0, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-            
-            // GME YOLO Chart with prediction bands
-            const gmeCtx = document.getElementById('chart-gme')?.getContext('2d');
-            if (gmeCtx) {
-                const currentGME = 45.20;
-                new Chart(gmeCtx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({length: 40}, (_, i) => i - 20),
-                        datasets: [
-                            {
-                                label: 'Historical',
-                                data: Array.from({length: 20}, (_, i) => {
-                                    if (i < 15) return 33 + Math.random() * 2;
-                                    return 33 + (i - 15) * 2.5;
-                                }).concat(Array(20).fill(null)),
-                                borderColor: '#ff00ff',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'MOON 🚀',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGME * Math.pow(1.15, i)
-                                    )
-                                ),
-                                borderColor: 'rgba(255, 0, 255, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                fill: '+1',
-                                backgroundColor: 'rgba(255, 0, 255, 0.1)'
-                            },
-                            {
-                                label: 'Squeeze Path',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGME + i * 5 + Math.pow(i, 1.5)
-                                    )
-                                ),
-                                borderColor: '#ff00ff',
-                                borderDash: [5, 5],
-                                borderWidth: 2,
-                                pointRadius: 0
-                            },
-                            {
-                                label: 'Paper Hands',
-                                data: Array(20).fill(null).concat(
-                                    Array.from({length: 20}, (_, i) => 
-                                        currentGME - i * 1.5
-                                    )
-                                ),
-                                borderColor: 'rgba(255, 71, 87, 0.5)',
-                                borderDash: [5, 5],
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: miniChartOptions
-                });
-            }
-        }
-        
-        // Tab switching
-        function showTab(tabName) {
-            // Update tab UI
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Show/hide content
-            document.querySelectorAll('.signals-container').forEach(container => {
-                container.style.display = 'none';
-            });
-            
-            if (tabName === 'active') {
-                document.getElementById('activeSignals').style.display = 'block';
-            } else if (tabName === 'closed') {
-                document.getElementById('closedSignals').style.display = 'block';
-            } else if (tabName === 'watchlist') {
-                document.getElementById('watchlistSignals').style.display = 'block';
-            }
-            
-            vibrate();
-        }
-        
-        // Category filtering
-        function filterSignals(category) {
-            // Update pill UI
-            document.querySelectorAll('.category-pill').forEach(pill => {
-                pill.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Filter cards
-            const cards = document.querySelectorAll('.signal-card');
-            cards.forEach(card => {
-                if (category === 'all' || card.dataset.category?.includes(category)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            vibrate();
-        }
-        
-        // Toggle notification
-        function toggleNotify(element) {
-            element.classList.toggle('on');
-            vibrate();
-        }
-        
-        // Haptic feedback
-        function vibrate(duration = 10) {
-            if ('vibrate' in navigator) {
-                navigator.vibrate(duration);
-            }
-        }
-        
-        // Real-time price updates
-        function updatePrices() {
-            document.querySelectorAll('.price').forEach(price => {
-                const current = parseFloat(price.textContent.replace('$', '').replace(',', ''));
-                const change = (Math.random() - 0.5) * 0.02 * current;
-                const newPrice = current + change;
                 
-                if (current > 1000) {
-                    price.textContent = '$' + newPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                } else {
-                    price.textContent = '$' + newPrice.toFixed(2);
-                }
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">State Management</div>
+                    <div class="feature-desc">
+                        • Riverpod for reactive state<br>
+                        • Authentication state handling<br>
+                        • Signal data management<br>
+                        • Watchlist synchronization
+                    </div>
+                </div>
                 
-                // Update change percentage
-                const changeEl = price.parentElement.querySelector('.change');
-                if (changeEl && !changeEl.textContent.includes('MOON')) {
-                    const percent = ((Math.random() - 0.5) * 4).toFixed(1);
-                    changeEl.textContent = (percent > 0 ? '+' : '') + percent + '%';
-                    changeEl.className = 'change ' + (percent > 0 ? 'positive' : 'negative');
-                }
-            });
-        }
-        
-        // Pull to refresh
-        let startY = 0;
-        let isPulling = false;
-        
-        document.addEventListener('touchstart', (e) => {
-            if (window.scrollY === 0) {
-                startY = e.touches[0].pageY;
-                isPulling = true;
-            }
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (!isPulling) return;
+                <div class="feature-card">
+                    <div class="feature-icon">🧭</div>
+                    <div class="feature-title">Navigation</div>
+                    <div class="feature-desc">
+                        • GoRouter with authentication guards<br>
+                        • Deep linking support<br>
+                        • Bottom navigation with state<br>
+                        • Proper route management
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">User Experience</div>
+                    <div class="feature-desc">
+                        • Intuitive onboarding process<br>
+                        • Pull-to-refresh interactions<br>
+                        • Loading states and error handling<br>
+                        • Contextual snackbars and dialogs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="demo-section">
+            <h2 class="section-title">🚀 Ready for Production</h2>
+            <p>This implementation provides a solid foundation that can be immediately extended with:</p>
             
-            const currentY = e.touches[0].pageY;
-            const diff = currentY - startY;
-            
-            if (diff > 80) {
-                vibrate(20);
-                location.reload();
-            }
-        });
-        
-        document.addEventListener('touchend', () => {
-            isPulling = false;
-        });
-        
-        // Swipe to watchlist (simple implementation)
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let currentCard = null;
-        
-        document.querySelectorAll('.signal-card').forEach(card => {
-            card.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-                currentCard = card;
-            });
-            
-            card.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-        });
-        
-        function handleSwipe() {
-            if (touchEndX > touchStartX + 50 && currentCard) {
-                // Swipe right - add to watchlist
-                currentCard.style.transform = 'translateX(100%)';
-                vibrate(20);
-                setTimeout(() => {
-                    currentCard.style.display = 'none';
-                }, 300);
-            }
-        }
-        
-        // Initialize on load
-        document.addEventListener('DOMContentLoaded', () => {
-            initCharts();
-            
-            // Start price updates
-            setInterval(updatePrices, 5000);
-            
-            // Add haptic to all interactive elements
-            document.querySelectorAll('.haptic').forEach(el => {
-                el.addEventListener('click', () => vibrate());
-            });
-            
-            // Simulate new signal notification
-            setTimeout(() => {
-                const badge = document.querySelector('.notification-dot');
-                badge.style.display = 'block';
-                vibrate([100, 50, 100]);
-            }, 3000);
-        });
-        
-        // PWA Support
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').catch(() => {});
-        }
-    </script>
+            <div style="margin-top: 20px;">
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    Real API integration (REST endpoints ready)
+                </div>
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    WebSocket connections for live data
+                </div>
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    Payment processing integration
+                </div>
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    Push notification setup
+                </div>
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    Advanced chart implementations
+                </div>
+                <div class="status-item">
+                    <span class="status-check">→</span>
+                    Machine learning model integration
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; padding: 40px 0; color: white;">
+            <p>© 2025 Stock Signal: AI Trading Alert - Built with Flutter & ❤️</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Production-ready trading app architecture</p>
+        </div>
+    </div>
 </body>
 </html>

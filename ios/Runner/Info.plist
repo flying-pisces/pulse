@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Pulse</string>
+	<string>Stock Signal: AI Trading Alert</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,5 +45,37 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- URL Schemes for OAuth callbacks -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<!-- Google Sign-In URL Scheme -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.stocksignal.pulse.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- This will be replaced with your actual reversed client ID -->
+				<string>REVERSED_CLIENT_ID_FROM_GOOGLE</string>
+			</array>
+		</dict>
+		<!-- Apple Sign-In URL Scheme -->
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.stocksignal.pulse.apple</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.stocksignal.pulse</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Queries for external authentication -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googlechromes</string>
+		<string>comgooglemaps</string>
+		<string>googleauth</string>
+	</array>
 </dict>
 </plist>

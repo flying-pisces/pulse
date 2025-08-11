@@ -1,0 +1,74 @@
+{
+  "project": "pulse-trading-app",
+  "description": "Flutter-based trading application with multi-agent development approach",
+  "version": "1.0.0",
+  "agents": {
+    "market-researcher": {
+      "description": "Market research and competitive analysis",
+      "context": ["docs/market-research/", ".claude/claude_agent_config.md"],
+      "responsibilities": ["competitor analysis", "user research", "market trends", "feature prioritization"]
+    },
+    "product-strategist": {
+      "description": "Product roadmap and platform strategy",
+      "context": ["docs/product-strategy/", ".claude/claude_agent_config.md"],
+      "responsibilities": ["MVP definition", "platform strategy", "monetization", "feature flags"]
+    },
+    "system-architect": {
+      "description": "Technical architecture and system design",
+      "context": ["docs/architecture/", "docs/api-specs/", ".claude/claude_agent_config.md"],
+      "mcp": ["filesystem"],
+      "responsibilities": ["system architecture", "API design", "database schema", "scalability planning"]
+    },
+    "developer": {
+      "description": "Flutter app development and implementation",
+      "context": ["lib/", "test/", "pubspec.yaml", "CLAUDE.md", ".claude/claude_agent_config.md"],
+      "mcp": ["filesystem", "git"],
+      "responsibilities": ["Flutter UI", "API integration", "state management", "business logic"]
+    },
+    "code-reviewer": {
+      "description": "Code quality and security review",
+      "context": ["lib/", "test/", "analysis_options.yaml", ".claude/claude_agent_config.md"],
+      "mcp": ["filesystem", "git"],
+      "responsibilities": ["code review", "security audit", "performance optimization", "best practices"]
+    },
+    "devops": {
+      "description": "CI/CD, deployment, and infrastructure",
+      "context": ["android/", "ios/", ".github/", ".claude/claude_agent_config.md"],
+      "mcp": ["filesystem", "git"],
+      "responsibilities": ["CI/CD setup", "app store deployment", "monitoring", "infrastructure"]
+    },
+    "qa-tester": {
+      "description": "Test strategy and quality assurance",
+      "context": ["test/", "integration_test/", ".claude/claude_agent_config.md"],
+      "mcp": ["filesystem"],
+      "responsibilities": ["test planning", "automated testing", "E2E testing", "performance testing"]
+    },
+    "analytics": {
+      "description": "User behavior tracking and optimization",
+      "context": ["lib/", "docs/analytics/", ".claude/claude_agent_config.md"],
+      "responsibilities": ["analytics implementation", "KPI tracking", "A/B testing", "user insights"]
+    },
+    "compliance": {
+      "description": "Regulatory compliance and security standards",
+      "context": ["docs/compliance/", ".claude/claude_agent_config.md"],
+      "responsibilities": ["FINRA compliance", "data privacy", "security standards", "audit requirements"]
+    }
+  },
+  "workflows": {
+    "feature-development": ["market-researcher", "product-strategist", "system-architect", "developer", "code-reviewer", "qa-tester", "devops", "analytics"],
+    "security-audit": ["compliance", "code-reviewer", "devops"],
+    "performance-optimization": ["analytics", "developer", "qa-tester"]
+  },
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "/Users/cyin/pulse"],
+      "agents": ["system-architect", "developer", "code-reviewer", "devops", "qa-tester"]
+    },
+    "git": {
+      "command": "npx", 
+      "args": ["@modelcontextprotocol/server-git"],
+      "agents": ["developer", "code-reviewer", "devops"]
+    }
+  }
+}
