@@ -63,6 +63,9 @@ dependencies:
   # Environment Variables
   flutter_dotenv: ^5.1.0
   
+  # Backend & Database
+  pocketbase: ^0.18.2
+  
   # Device & Security
   device_info_plus: ^10.1.0
   package_info_plus: ^8.0.0

@@ -14,6 +14,11 @@ class EnvConfig {
   static String get alpacaWsUrl => 
       dotenv.env['ALPACA_WS_URL'] ?? 'wss://stream.data.alpaca.markets/v2/iex';
 
+  // PocketBase Configuration
+  static String get pocketbaseUrl => dotenv.env['POCKETBASE_URL'] ?? 'http://localhost:8090';
+  static String get pocketbaseAdminEmail => dotenv.env['POCKETBASE_ADMIN_EMAIL'] ?? '';
+  static String get pocketbaseAdminPassword => dotenv.env['POCKETBASE_ADMIN_PASSWORD'] ?? '';
+
   // Database Configuration (SQLite - no longer using Supabase)
   // Keep these for backward compatibility but they won't be used
   static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
@@ -46,6 +51,12 @@ class EnvConfig {
   static bool get hasAlpacaCredentials => 
       alpacaApiKey.isNotEmpty && alpacaSecretKey.isNotEmpty;
   
+  static bool get hasPocketbaseCredentials => 
+      pocketbaseUrl.isNotEmpty;
+  
+  static bool get hasPocketbaseAdminCredentials => 
+      pocketbaseAdminEmail.isNotEmpty && pocketbaseAdminPassword.isNotEmpty;
+  
   // Deprecated - using SQLite now
   static bool get hasSupabaseCredentials => false;
   
@@ -61,6 +72,8 @@ class EnvConfig {
   // Debug helper to check configuration status
   static Map<String, bool> get configurationStatus => {
     'alpaca_credentials': hasAlpacaCredentials,
+    'pocketbase_credentials': hasPocketbaseCredentials,
+    'pocketbase_admin': hasPocketbaseAdminCredentials,
     'supabase_credentials': hasSupabaseCredentials,
     'google_oauth': hasGoogleOAuthCredentials,
     'apple_oauth': hasAppleOAuthCredentials,
@@ -72,7 +85,10 @@ class EnvConfig {
     'app_env': appEnv,
     'alpaca_base_url': alpacaBaseUrl,
     'alpaca_ws_url': alpacaWsUrl,
+    'pocketbase_url': pocketbaseUrl,
     'has_alpaca_credentials': hasAlpacaCredentials,
+    'has_pocketbase_credentials': hasPocketbaseCredentials,
+    'has_pocketbase_admin': hasPocketbaseAdminCredentials,
     'has_supabase_credentials': hasSupabaseCredentials,
     'has_google_oauth': hasGoogleOAuthCredentials,
     'has_apple_oauth': hasAppleOAuthCredentials,
@@ -84,6 +100,8 @@ class EnvConfig {
   /// Validate required environment variables for different features
   static List<String> validateRequiredConfig({
     bool requireAlpaca = false,
+    bool requirePocketBase = false,
+    bool requirePocketBaseAdmin = false,
     bool requireSupabase = false,
     bool requireGoogleOAuth = false,
     bool requireAppleOAuth = false,
@@ -93,6 +111,14 @@ class EnvConfig {
 
     if (requireAlpaca && !hasAlpacaCredentials) {
       missing.addAll(['ALPACA_API_KEY', 'ALPACA_SECRET_KEY']);
+    }
+
+    if (requirePocketBase && !hasPocketbaseCredentials) {
+      missing.add('POCKETBASE_URL');
+    }
+
+    if (requirePocketBaseAdmin && !hasPocketbaseAdminCredentials) {
+      missing.addAll(['POCKETBASE_ADMIN_EMAIL', 'POCKETBASE_ADMIN_PASSWORD']);
     }
 
     if (requireSupabase && !hasSupabaseCredentials) {

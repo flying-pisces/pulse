@@ -1,0 +1,37 @@
+# Custom PocketBase Docker image with hooks and migrations
+FROM alpine:latest
+
+# Install dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    unzip \
+    wget \
+    curl
+
+# Download and install PocketBase
+ARG PB_VERSION=0.22.0
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip \
+    && unzip pocketbase_${PB_VERSION}_linux_amd64.zip \
+    && chmod +x pocketbase \
+    && mv pocketbase /usr/local/bin/pocketbase \
+    && rm pocketbase_${PB_VERSION}_linux_amd64.zip
+
+# Create app directory
+WORKDIR /pb
+
+# Copy custom hooks and migrations
+COPY pocketbase/hooks ./pb_hooks/
+COPY pocketbase/migrations ./pb_migrations/
+
+# Create data directory
+RUN mkdir -p pb_data
+
+# Expose PocketBase port
+EXPOSE 8090
+
+# Health check
+HEALTHCHECK --interval=5s --timeout=5s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+
+# Start PocketBase
+CMD ["/usr/local/bin/pocketbase", "serve", "--http=0.0.0.0:8090"]
