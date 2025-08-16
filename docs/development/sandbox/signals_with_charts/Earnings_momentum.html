@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnings Momentum - GOOGL Beat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; padding: 10px; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .trading-type-badge { background: #95a5a6; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .signal-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #95a5a6; position: relative; }
+        .earnings-badge { position: absolute; top: 15px; right: 15px; background: #95a5a6; color: #000; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
+        .ticker-main { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .ticker { font-size: 28px; font-weight: bold; }
+        .strategy-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #95a5a6; color: #000; }
+        .company-name { font-size: 14px; color: #888; margin-bottom: 12px; }
+        .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+        .price { font-size: 32px; font-weight: bold; }
+        .change { font-size: 18px; font-weight: 600; color: #00ff88; }
+        .chart-section { height: 120px; margin-bottom: 20px; position: relative; background: rgba(149, 165, 166, 0.02); border-radius: 12px; padding: 10px; }
+        .event-label { position: absolute; top: 10px; right: 10px; background: rgba(149, 165, 166, 0.8); color: #000; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; z-index: 10; }
+        .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { text-align: center; padding: 12px 8px; background: rgba(149, 165, 166, 0.05); border-radius: 10px; }
+        .stat-value { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+        .stat-value.positive { color: #00ff88; }
+        .stat-value.neutral { color: #95a5a6; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .strategy-info { background: rgba(149, 165, 166, 0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(149, 165, 166, 0.1); }
+        .strategy-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #95a5a6; }
+        .strategy-desc { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 10px; }
+        .strategy-link { color: #00ff88; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .earnings-details { background: rgba(149, 165, 166, 0.1); border: 1px solid rgba(149, 165, 166, 0.3); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .earnings-details h4 { color: #95a5a6; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .earnings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .earnings-item { font-size: 11px; color: #ccc; }
+        .earnings-item strong { color: #95a5a6; }
+        .beat-indicator { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 8px; margin-top: 8px; text-align: center; }
+        .beat-indicator span { color: #00ff88; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">Earnings</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="earnings-badge">POST-ER</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">GOOGL</span>
+            <span class="strategy-badge">POST-ER</span>
+        </div>
+        
+        <div class="company-name">Google Post-Earnings</div>
+        
+        <div class="price-row">
+            <span class="price">$178.25</span>
+            <span class="change">+8.5%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-googl"></canvas>
+            <div class="event-label">Beat +15%</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value positive">+11%</div>
+                <div class="stat-label">AH Move</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">$185</div>
+                <div class="stat-label">Target</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">5.2M</div>
+                <div class="stat-label">AH Vol</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Post-Earnings Momentum</div>
+            <div class="strategy-desc">
+                Google absolutely crushed earnings expectations and raised full-year guidance. 
+                After-hours trading shows +11% move on heavy volume. Buy at market open for 
+                continuation momentum. Historical data shows 3-day average of +5% after big beats.
+            </div>
+            <a href="https://example.com/earnings-momentum" class="strategy-link">
+                Earnings Playbook →
+            </a>
+        </div>
+        
+        <div class="earnings-details">
+            <h4>📊 Earnings Summary</h4>
+            <div class="earnings-grid">
+                <div class="earnings-item"><strong>EPS:</strong> $1.89 vs $1.65E</div>
+                <div class="earnings-item"><strong>Revenue:</strong> $88.3B vs $86.2B</div>
+                <div class="earnings-item"><strong>Cloud:</strong> +35% YoY growth</div>
+                <div class="earnings-item"><strong>Search:</strong> Beat by $2.1B</div>
+            </div>
+            <div class="beat-indicator">
+                <span>🎯 MASSIVE BEAT - All segments exceeded expectations</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const googlCtx = document.getElementById('chart-googl').getContext('2d');
+        new Chart(googlCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [{
+                    label: 'Earnings Move',
+                    data: Array.from({length: 20}, (_, i) => {
+                        if (i < 18) return 164 + i * 0.5;
+                        return 173 + (i - 18) * 2.5; // After-hours jump
+                    }).concat(Array(20).fill(null)),
+                    borderColor: '#95a5a6',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }, {
+                    label: 'Momentum Target',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => 178.25 + i * 0.8 + Math.pow(i, 1.05) * 0.2)),
+                    borderColor: 'rgba(149, 165, 166, 0.5)',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: '+1',
+                    backgroundColor: 'rgba(149, 165, 166, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 }, line: { borderWidth: 2 } }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDA Event - SAVA Binary Play</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; padding: 10px; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .trading-type-badge { background: #16a085; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .signal-card { background: linear-gradient(135deg, #1a1a1a 0%, #2d0d2d 100%); border-radius: 16px; padding: 20px; border: 1px solid #16a085; position: relative; animation: fda-glow 3s ease-in-out infinite; }
+        @keyframes fda-glow { 0%, 100% { box-shadow: 0 0 10px rgba(22, 160, 133, 0.3); } 50% { box-shadow: 0 0 20px rgba(22, 160, 133, 0.5); } }
+        .fda-badge { position: absolute; top: 15px; right: 15px; background: #16a085; color: #fff; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: urgent-pulse 1s infinite; }
+        @keyframes urgent-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .ticker-main { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .ticker { font-size: 28px; font-weight: bold; }
+        .strategy-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #16a085; }
+        .company-name { font-size: 14px; color: #888; margin-bottom: 12px; }
+        .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+        .price { font-size: 32px; font-weight: bold; }
+        .change { font-size: 18px; font-weight: 600; color: #00ff88; }
+        .chart-section { height: 120px; margin-bottom: 20px; position: relative; background: rgba(22, 160, 133, 0.02); border-radius: 12px; padding: 10px; }
+        .event-label { position: absolute; top: 10px; right: 10px; background: rgba(22, 160, 133, 0.8); padding: 4px 10px; border-radius: 8px; font-size: 11px; z-index: 10; }
+        .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { text-align: center; padding: 12px 8px; background: rgba(22, 160, 133, 0.05); border-radius: 10px; }
+        .stat-value { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+        .stat-value.positive { color: #00ff88; }
+        .stat-value.negative { color: #ff4757; }
+        .stat-value.neutral { color: #16a085; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .strategy-info { background: rgba(22, 160, 133, 0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(22, 160, 133, 0.1); }
+        .strategy-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #16a085; }
+        .strategy-desc { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 10px; }
+        .strategy-link { color: #00ff88; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .risk-warning { background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .risk-warning h4 { color: #ff4757; font-size: 12px; margin-bottom: 6px; text-transform: uppercase; }
+        .binary-outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .outcome { padding: 8px; border-radius: 8px; text-align: center; font-size: 11px; }
+        .outcome.bull { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); }
+        .outcome.bear { background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">FDA Event</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="fda-badge">FDA 7/28</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">SAVA</span>
+            <span class="strategy-badge">FDA PDUFA</span>
+        </div>
+        
+        <div class="company-name">Cassava Sciences</div>
+        
+        <div class="price-row">
+            <span class="price">$42.15</span>
+            <span class="change">+12.3%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-sava"></canvas>
+            <div class="event-label">FDA 7/28</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value positive">+180%</div>
+                <div class="stat-label">If Pass</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value negative">-65%</div>
+                <div class="stat-label">If Fail</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">220%</div>
+                <div class="stat-label">IV</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Binary FDA Event - YOLO!</div>
+            <div class="strategy-desc">
+                Alzheimer's drug PDUFA date is July 28th. This is a pure binary event - either the drug 
+                gets approved and stock moons, or it fails and crashes. Buy OTM calls for massive leverage 
+                but ultra high risk. Total loss is possible!
+            </div>
+            <a href="https://example.com/fda-calendar" class="strategy-link">
+                FDA Calendar →
+            </a>
+        </div>
+        
+        <div class="risk-warning">
+            <h4>⚠️ BINARY EVENT WARNING</h4>
+            <p>This is pure gambling! FDA outcomes are unpredictable. Size accordingly - only risk what you can lose 100%.</p>
+            <div class="binary-outcomes">
+                <div class="outcome bull">🚀 APPROVAL<br>+180% target</div>
+                <div class="outcome bear">💀 REJECTION<br>-65% crash</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const savaCtx = document.getElementById('chart-sava').getContext('2d');
+        new Chart(savaCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [{
+                    label: 'Historical',
+                    data: Array.from({length: 20}, (_, i) => 35 + i * 0.35 + Math.random() * 2).concat(Array(20).fill(null)),
+                    borderColor: '#16a085',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }, {
+                    label: 'FDA Approval',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => {
+                        if (i < 10) return 42.15 + i * 0.5;
+                        return 42.15 + 5 + (i - 10) * 8;
+                    })),
+                    borderColor: 'rgba(0, 255, 136, 0.8)',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: '+1',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)'
+                }, {
+                    label: 'FDA Rejection',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => {
+                        if (i < 10) return 42.15 - i * 0.5;
+                        return 42.15 - 5 - (i - 10) * 2;
+                    })),
+                    borderColor: 'rgba(255, 71, 87, 0.8)',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 }, line: { borderWidth: 2 } }
+            }
+        });
+    </script>
+</body>
+</html>

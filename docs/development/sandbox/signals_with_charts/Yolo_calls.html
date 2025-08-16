@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO Calls - BTC 150K Moonshot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            padding: 10px;
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5px;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .yolo-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: linear-gradient(135deg, #ff00ff, #ff4757);
+            border-radius: 10px;
+            color: white;
+            animation: color-shift 3s infinite;
+        }
+        
+        @keyframes color-shift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+        }
+        
+        .trading-type-badge {
+            background: linear-gradient(135deg, #ff00ff, #ff4757);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: yolo-glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes yolo-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
+        }
+        
+        .signal-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d0d2d 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #ff00ff;
+            position: relative;
+            overflow: hidden;
+            animation: yolo-glow 3s ease-in-out infinite;
+        }
+        
+        .ticker-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .ticker {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .strategy-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #ff00ff, #ff4757);
+            animation: color-shift 3s infinite;
+        }
+        
+        .company-name {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+        
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .change {
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
+        .chart-section {
+            height: 120px;
+            margin-bottom: 20px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        .event-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 255, 0.8);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            z-index: 10;
+        }
+        
+        .prediction-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #ff00ff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 12px 8px;
+            background: rgba(255, 0, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 0, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value.positive { color: #00ff88; }
+        .stat-value.negative { color: #ff4757; }
+        .stat-value.neutral { color: #ff00ff; }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .strategy-info {
+            background: rgba(255, 0, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 0, 255, 0.1);
+        }
+        
+        .strategy-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ff00ff;
+        }
+        
+        .strategy-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .strategy-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .strategy-link:hover {
+            color: #00d4ff;
+        }
+        
+        .risk-warning {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .risk-warning h4 {
+            color: #ff00ff;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        
+        .risk-warning p {
+            font-size: 11px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+        
+        .yolo-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 24px;
+            animation: rocket-bounce 2s infinite;
+        }
+        
+        @keyframes rocket-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            SignalPro
+            <span class="yolo-badge">YOLO!</span>
+        </div>
+        <div class="trading-type-badge">YOLO Calls</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="ticker-main">
+            <span class="ticker">BTC</span>
+            <span class="strategy-badge">YOLO CALLS</span>
+        </div>
+        
+        <div class="company-name">Bitcoin 150K Moonshot</div>
+        
+        <div class="price-row">
+            <span class="price">$105,456</span>
+            <span class="change">+3.8%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-btc"></canvas>
+            <div class="event-label">Kalshi 75% → 150K</div>
+            <div class="prediction-indicator">← history | moon bands →</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value positive">250%</div>
+                <div class="stat-label">Max Gain</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value negative">-100%</div>
+                <div class="stat-label">Max Loss</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">$850</div>
+                <div class="stat-label">Per Call</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">December 150K Call Options</div>
+            <div class="strategy-desc">
+                Kalshi prediction market shows 75% odds of Bitcoin hitting 150K by Q4 2025. 
+                Buy $130K call options for December expiration. This is HIGH RISK, HIGH REWARD - 
+                only risk what you can afford to lose completely! Could be a 10x or total loss.
+            </div>
+            <a href="https://kalshi.com/markets/kxbtcmax150" class="strategy-link">
+                View Kalshi Odds →
+            </a>
+        </div>
+        
+        <div class="risk-warning">
+            <h4>🚀 EXTREME YOLO WARNING</h4>
+            <p>This is pure speculation! Options can expire worthless. This is gambling, not investing. Only bet what you can afford to lose 100%. Diamond hands required! 💎🙌</p>
+        </div>
+        
+        <div class="yolo-footer">🚀🌙</div>
+    </div>
+
+    <script>
+        // Initialize BTC YOLO Chart
+        const btcCtx = document.getElementById('chart-btc').getContext('2d');
+        const currentBTC = 105456;
+        
+        new Chart(btcCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [
+                    {
+                        label: 'Historical',
+                        data: Array.from({length: 20}, (_, i) => 
+                            98000 + i * 350 + Math.sin(i * 0.3) * 1000
+                        ).concat(Array(20).fill(null)),
+                        borderColor: '#ff00ff',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'MOON TARGET (150K)',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => {
+                                const progress = i / 20;
+                                return currentBTC + (150000 - currentBTC) * Math.pow(progress, 0.7);
+                            })
+                        ),
+                        borderColor: 'rgba(0, 255, 136, 0.8)',
+                        borderDash: [5, 5],
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        fill: '+1',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)'
+                    },
+                    {
+                        label: 'Base Case',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => 
+                                currentBTC + i * 1500 + Math.sin(i * 0.2) * 2000
+                            )
+                        ),
+                        borderColor: '#ff00ff',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Bear Case (RIP)',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => 
+                                currentBTC - i * 800 - Math.pow(i, 1.2) * 100
+                            )
+                        ),
+                        borderColor: 'rgba(255, 71, 87, 0.5)',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                elements: {
+                    point: { radius: 0 },
+                    line: { borderWidth: 2 }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

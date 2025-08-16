@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Market - NVDA Gap & Go</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            padding: 10px;
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5px;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .trading-type-badge {
+            background: #ffd93d;
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .signal-card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px dashed #ffd93d;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .time-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ffd93d;
+            color: #000;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            animation: time-pulse 2s infinite;
+        }
+        
+        @keyframes time-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .ticker-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .ticker {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .strategy-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #ffd93d;
+            color: #000;
+        }
+        
+        .company-name {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+        
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .change {
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
+        .chart-section {
+            height: 120px;
+            margin-bottom: 20px;
+            position: relative;
+            background: rgba(255, 217, 61, 0.02);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        .chart-section::after {
+            content: 'Market Open';
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 80%;
+            background: rgba(255, 217, 61, 0.5);
+            border-left: 2px dashed rgba(255, 217, 61, 0.7);
+            font-size: 9px;
+            color: #ffd93d;
+            padding-left: 5px;
+        }
+        
+        .event-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 217, 61, 0.8);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 10;
+        }
+        
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 12px 8px;
+            background: rgba(255, 217, 61, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 217, 61, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .stat-value.positive { color: #00ff88; }
+        .stat-value.neutral { color: #ffd93d; }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .strategy-info {
+            background: rgba(255, 217, 61, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 217, 61, 0.1);
+        }
+        
+        .strategy-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffd93d;
+        }
+        
+        .strategy-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .strategy-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .strategy-link:hover {
+            color: #00d4ff;
+        }
+        
+        .timing-section {
+            background: rgba(255, 217, 61, 0.1);
+            border: 1px solid rgba(255, 217, 61, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .timing-section h4 {
+            color: #ffd93d;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        
+        .timing-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .timing-item {
+            font-size: 11px;
+            color: #ccc;
+        }
+        
+        .timing-item strong {
+            color: #ffd93d;
+        }
+        
+        .countdown {
+            text-align: center;
+            font-size: 24px;
+            color: #ffd93d;
+            font-weight: bold;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">Pre-Market</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="time-badge">4:00 AM EST</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">NVDA</span>
+            <span class="strategy-badge">PRE-MKT</span>
+        </div>
+        
+        <div class="company-name">Nvidia Pre-Market Surge</div>
+        
+        <div class="price-row">
+            <span class="price">$1,125.50</span>
+            <span class="change">+5.2%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-nvda"></canvas>
+            <div class="event-label">Taiwan news 4AM</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value positive">+6.8%</div>
+                <div class="stat-label">Pre-Mkt</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">2.5M</div>
+                <div class="stat-label">Volume</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value neutral">9:28</div>
+                <div class="stat-label">Entry</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Pre-Market Gap & Go Strategy</div>
+            <div class="strategy-desc">
+                TSMC announced major production boost for AI chips. NVDA is up 6.8% in pre-market trading 
+                on heavy volume. Execute gap-and-go strategy: buy at 9:28-9:30 AM for opening momentum. 
+                Set stop-loss at pre-market low ($1,067).
+            </div>
+            <a href="https://example.com/premarket-trading" class="strategy-link">
+                Pre-Market Trading Guide →
+            </a>
+        </div>
+        
+        <div class="timing-section">
+            <h4>⏰ Critical Timing</h4>
+            <div class="timing-details">
+                <div class="timing-item"><strong>Entry:</strong> 9:28-9:30 AM</div>
+                <div class="timing-item"><strong>Stop:</strong> $1,067 (PM Low)</div>
+                <div class="timing-item"><strong>Target 1:</strong> $1,150</div>
+                <div class="timing-item"><strong>Target 2:</strong> $1,180</div>
+            </div>
+            <div class="countdown" id="countdown">05:28:42</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize NVDA Pre-market Chart
+        const nvdaCtx = document.getElementById('chart-nvda').getContext('2d');
+        const currentNVDA = 1125.50;
+        
+        new Chart(nvdaCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [
+                    {
+                        label: 'Pre-Market Action',
+                        data: Array.from({length: 20}, (_, i) => {
+                            if (i < 15) return 1070 + i * 3 + Math.sin(i * 0.2) * 2;
+                            return 1070 + 15 * 3 + (i - 15) * 8; // Sharp pre-market move
+                        }).concat(Array(20).fill(null)),
+                        borderColor: '#ffd93d',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Momentum Target',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => 
+                                currentNVDA + i * 2 + Math.pow(i, 1.05) * 0.5
+                            )
+                        ),
+                        borderColor: 'rgba(255, 217, 61, 0.6)',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: '+1',
+                        backgroundColor: 'rgba(255, 217, 61, 0.1)'
+                    },
+                    {
+                        label: 'Expected Path',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => 
+                                currentNVDA + i * 1.2
+                            )
+                        ),
+                        borderColor: '#ffd93d',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Stop Level',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, () => 1067)
+                        ),
+                        borderColor: 'rgba(255, 71, 87, 0.6)',
+                        borderDash: [3, 3],
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                elements: {
+                    point: { radius: 0 },
+                    line: { borderWidth: 2 }
+                }
+            }
+        });
+        
+        // Countdown to market open
+        function updateCountdown() {
+            const now = new Date();
+            const marketOpen = new Date();
+            marketOpen.setHours(9, 30, 0, 0);
+            
+            if (now > marketOpen) {
+                marketOpen.setDate(marketOpen.getDate() + 1);
+            }
+            
+            const diff = marketOpen - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>

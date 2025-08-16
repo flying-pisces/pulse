@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Squeeze - GME Diamond Hands</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; padding: 10px; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 5px; }
+        .yolo-badge { font-size: 10px; padding: 2px 6px; background: linear-gradient(135deg, #ff00ff, #ff4757); border-radius: 10px; color: white; animation: rocket-bounce 2s infinite; }
+        @keyframes rocket-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .trading-type-badge { background: linear-gradient(135deg, #ff00ff, #ff4757); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; animation: yolo-glow 3s ease-in-out infinite; }
+        @keyframes yolo-glow { 0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 255, 0.3); } 50% { box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); } }
+        .signal-card { background: linear-gradient(135deg, #1a1a1a 0%, #2d0d2d 100%); border-radius: 16px; padding: 20px; border: 1px solid #ff00ff; position: relative; animation: yolo-glow 3s ease-in-out infinite; }
+        .squeeze-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, #ff00ff, #ff4757); color: #fff; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: squeeze-pulse 1s infinite; }
+        @keyframes squeeze-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        .ticker-main { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .ticker { font-size: 28px; font-weight: bold; }
+        .strategy-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: linear-gradient(135deg, #ff00ff, #ff4757); animation: color-shift 3s infinite; }
+        @keyframes color-shift { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(30deg); } }
+        .company-name { font-size: 14px; color: #888; margin-bottom: 12px; }
+        .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+        .price { font-size: 32px; font-weight: bold; }
+        .change { font-size: 18px; font-weight: 600; color: #00ff88; }
+        .chart-section { height: 120px; margin-bottom: 20px; position: relative; background: rgba(255, 0, 255, 0.02); border-radius: 12px; padding: 10px; }
+        .event-label { position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 255, 0.8); padding: 4px 10px; border-radius: 8px; font-size: 11px; z-index: 10; }
+        .prediction-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #ff00ff; letter-spacing: 0.5px; text-transform: uppercase; }
+        .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { text-align: center; padding: 12px 8px; background: rgba(255, 0, 255, 0.05); border-radius: 10px; border: 1px solid rgba(255, 0, 255, 0.1); }
+        .stat-value { font-size: 18px; font-weight: bold; margin-bottom: 4px; }
+        .stat-value.short { color: #ff4757; }
+        .stat-value.target { color: #00ff88; }
+        .stat-value.diamond { color: #ff00ff; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .strategy-info { background: rgba(255, 0, 255, 0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255, 0, 255, 0.1); }
+        .strategy-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #ff00ff; }
+        .strategy-desc { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 10px; }
+        .strategy-link { color: #00ff88; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .meme-warning { background: rgba(255, 0, 255, 0.1); border: 1px solid rgba(255, 0, 255, 0.3); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .meme-warning h4 { color: #ff00ff; font-size: 12px; margin-bottom: 6px; text-transform: uppercase; }
+        .meme-warning p { font-size: 11px; color: #ccc; line-height: 1.4; }
+        .ape-footer { text-align: center; margin-top: 15px; font-size: 18px; animation: rocket-bounce 2s infinite; }
+        .diamond-hands { font-size: 24px; text-align: center; margin: 10px 0; animation: diamond-sparkle 3s infinite; }
+        @keyframes diamond-sparkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            SignalPro
+            <span class="yolo-badge">APE!</span>
+        </div>
+        <div class="trading-type-badge">Meme Squeeze</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="squeeze-badge">SQUEEZE!</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">GME</span>
+            <span class="strategy-badge">SQUEEZE</span>
+        </div>
+        
+        <div class="company-name">GameStop Gamma Ramp</div>
+        
+        <div class="price-row">
+            <span class="price">$45.20</span>
+            <span class="change">+35.2%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-gme"></canvas>
+            <div class="event-label">SI 140%</div>
+            <div class="prediction-indicator">← squeeze | moon bands →</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value short">140%</div>
+                <div class="stat-label">Short %</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value target">+420%</div>
+                <div class="stat-label">Target</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value diamond">💎🙌</div>
+                <div class="stat-label">Hands</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Diamond Hands Squeeze Play</div>
+            <div class="strategy-desc">
+                Short interest is at 140% with cost to borrow at 85%. Gamma ramp is building for a potential 
+                squeeze. This is pure YOLO territory - lottery ticket only! Not financial advice. 
+                Remember: we like the stock! Apes together strong! 🦍💪
+            </div>
+            <a href="https://reddit.com/r/wallstreetbets" class="strategy-link">
+                Join the Apes →
+            </a>
+        </div>
+        
+        <div class="diamond-hands">💎🙌💎</div>
+        
+        <div class="meme-warning">
+            <h4>🦍 APE WARNING</h4>
+            <p>This is full degen mode! Meme stocks are wildly unpredictable. Could moon or crater instantly. Only YOLO with money you can lose. Diamond hands required! We eat crayons, not financial advice! 🖍️🚀</p>
+        </div>
+        
+        <div class="ape-footer">🚀🌙🦍</div>
+    </div>
+
+    <script>
+        const gmeCtx = document.getElementById('chart-gme').getContext('2d');
+        new Chart(gmeCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [{
+                    label: 'Ape Power',
+                    data: Array.from({length: 20}, (_, i) => {
+                        if (i < 15) return 33 + Math.random() * 2;
+                        return 33 + (i - 15) * 2.5; // Squeeze move
+                    }).concat(Array(20).fill(null)),
+                    borderColor: '#ff00ff',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }, {
+                    label: 'TO THE MOON 🚀',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => 45.20 * Math.pow(1.12, i))),
+                    borderColor: 'rgba(0, 255, 136, 0.8)',
+                    borderDash: [5, 5],
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    fill: '+1',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)'
+                }, {
+                    label: 'Squeeze Path',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => 45.20 + i * 5 + Math.pow(i, 1.3))),
+                    borderColor: '#ff00ff',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }, {
+                    label: 'Paper Hands Exit',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => 45.20 - i * 1.5)),
+                    borderColor: 'rgba(255, 71, 87, 0.5)',
+                    borderDash: [2, 2],
+                    borderWidth: 1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 }, line: { borderWidth: 2 } }
+            }
+        });
+    </script>
+</body>
+</html>

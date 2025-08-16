@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Page Workflow - Trading Signals App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .workflow-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .page-node {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            width: 240px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .page-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        
+        .page-node.entry-point {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #E8F5E8, #F1F8E9);
+        }
+        
+        .page-node.auth-required {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, #FFF3E0, #FFF8E1);
+        }
+        
+        .page-node.paid-only {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, #E3F2FD, #E8F4F8);
+        }
+        
+        .page-node.premium-only {
+            border-color: #9C27B0;
+            background: linear-gradient(135deg, #F3E5F5, #F8E6FF);
+            animation: premium-glow 3s ease-in-out infinite;
+        }
+        
+        @keyframes premium-glow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(156, 39, 176, 0.2); }
+            50% { box-shadow: 0 12px 30px rgba(156, 39, 176, 0.4); }
+        }
+        
+        .page-node.blocked {
+            border-color: #f44336;
+            background: linear-gradient(135deg, #FFEBEE, #FFCDD2);
+            opacity: 0.7;
+        }
+        
+        .page-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .page-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            text-align: center;
+        }
+        
+        .page-type {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .page-type.flutter {
+            background: #42A5F5;
+        }
+        
+        .page-type.web {
+            background: #FF7043;
+        }
+        
+        .arrow {
+            color: #666;
+            font-size: 20px;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .decision-diamond {
+            background: linear-gradient(45deg, #FFB74D, #FF8F00);
+            color: white;
+            padding: 20px;
+            margin: 15px;
+            width: 200px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(255, 143, 0, 0.3);
+        }
+        
+        .user-state {
+            background: linear-gradient(135deg, #26C6DA, #00ACC1);
+            color: white;
+            padding: 15px;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: bold;
+            margin: 10px;
+            min-width: 120px;
+            box-shadow: 0 5px 15px rgba(38, 198, 218, 0.3);
+        }
+        
+        .vertical-line {
+            width: 3px;
+            height: 60px;
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            margin: 10px auto;
+        }
+        
+        .horizontal-line {
+            height: 3px;
+            width: 80px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            margin: 0 15px;
+        }
+        
+        .workflow-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+        
+        .route-path {
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="workflow-container">
+        <div class="title">📱 UI Page Flow - Trading Signals App</div>
+        
+        <!-- App Entry Point -->
+        <div class="workflow-section">
+            <div class="section-title">🚪 App Entry & Authentication Flow</div>
+            
+            <div class="flow-row">
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">🏠 Splash Screen</div>
+                    <div class="page-description">App logo, loading animation, initial auth check</div>
+                    <div class="route-path">/splash</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="decision-diamond">
+                    <div>User Authenticated?</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node auth-required">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">🔐 Login Screen</div>
+                    <div class="page-description">Email/password, social login, registration link</div>
+                    <div class="route-path">/login</div>
+                </div>
+            </div>
+            
+            <div class="vertical-line"></div>
+            
+            <div class="flow-row">
+                <div class="page-node auth-required">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📝 Registration Screen</div>
+                    <div class="page-description">Create account, email verification, terms</div>
+                    <div class="route-path">/register</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node auth-required">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">✉️ Email Verification</div>
+                    <div class="page-description">Verify email, resend code, continue to app</div>
+                    <div class="route-path">/verify</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main App Navigation -->
+        <div class="workflow-section">
+            <div class="section-title">🏠 Main App Navigation</div>
+            
+            <div class="flow-row">
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📊 Dashboard Home</div>
+                    <div class="page-description">Overview, trending signals, navigation menu</div>
+                    <div class="route-path">/home</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="decision-diamond">
+                    <div>Check Subscription Level</div>
+                </div>
+            </div>
+            
+            <div class="vertical-line"></div>
+            
+            <!-- User States -->
+            <div class="flow-row">
+                <div class="user-state">👤 FREE USER</div>
+                <div class="user-state">💳 PAID USER</div>
+                <div class="user-state">⭐ PREMIUM USER</div>
+            </div>
+        </div>
+        
+        <!-- Free User Flow -->
+        <div class="workflow-section">
+            <div class="section-title">👤 Free User Experience</div>
+            
+            <div class="flow-row">
+                <div class="page-node blocked">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">🔒 Signal Teaser Page</div>
+                    <div class="page-description">Preview of signals, blurred content, upgrade CTA</div>
+                    <div class="route-path">/signals/preview</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node auth-required">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">💰 Pricing Page</div>
+                    <div class="page-description">Subscription plans, features comparison, payment</div>
+                    <div class="route-path">/pricing</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node auth-required">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">💳 Payment Screen</div>
+                    <div class="page-description">Stripe checkout, plan selection, billing info</div>
+                    <div class="route-path">/payment</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Paid User Flow -->
+        <div class="workflow-section">
+            <div class="section-title">💳 Paid User Experience</div>
+            
+            <div class="flow-row">
+                <div class="page-node paid-only">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📋 Signal Categories</div>
+                    <div class="page-description">IPO, YOLO, Options, Crypto categories grid</div>
+                    <div class="route-path">/signals</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🚀 IPO Today Signal</div>
+                    <div class="page-description">CRCL hot IPO momentum play</div>
+                    <div class="route-path">/signals/ipo</div>
+                </div>
+            </div>
+            
+            <div class="vertical-line"></div>
+            
+            <!-- All 10 Signal Pages -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;">
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">💎 YOLO Calls</div>
+                    <div class="page-description">BTC 150K moonshot signals</div>
+                    <div class="route-path">/signals/yolo</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🌅 Pre-Market</div>
+                    <div class="page-description">NVDA pre-market gap strategy</div>
+                    <div class="route-path">/signals/premarket</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🔄 Stock Split</div>
+                    <div class="page-description">AMZN 20:1 split announcement</div>
+                    <div class="route-path">/signals/split</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">📈 Options Spread</div>
+                    <div class="page-description">TSLA iron condor theta gang</div>
+                    <div class="route-path">/signals/options</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🔗 Crypto DeFi</div>
+                    <div class="page-description">ETH staking play signals</div>
+                    <div class="route-path">/signals/crypto</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🧬 FDA Event</div>
+                    <div class="page-description">SAVA binary approval event</div>
+                    <div class="route-path">/signals/fda</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">📊 Earnings Momentum</div>
+                    <div class="page-description">GOOGL post-earnings momentum</div>
+                    <div class="route-path">/signals/earnings</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🎯 Unusual Options</div>
+                    <div class="page-description">AMD unusual options flow</div>
+                    <div class="route-path">/signals/unusual</div>
+                </div>
+                
+                <div class="page-node paid-only">
+                    <div class="page-type web">WEB VIEW</div>
+                    <div class="page-title">🦍 Meme Squeeze</div>
+                    <div class="page-description">GME diamond hands squeeze</div>
+                    <div class="route-path">/signals/meme</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Premium User Flow -->
+        <div class="workflow-section">
+            <div class="section-title">⭐ Super-Premium User Experience</div>
+            
+            <div class="flow-row">
+                <div class="page-node premium-only">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">🔴 Live Signal Feed</div>
+                    <div class="page-description">Real-time WebSocket signals, push notifications</div>
+                    <div class="route-path">/live-feed</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node premium-only">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📊 Advanced Analytics</div>
+                    <div class="page-description">Performance charts, win rates, portfolio tracking</div>
+                    <div class="route-path">/analytics</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="page-node premium-only">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">⚙️ Live Settings</div>
+                    <div class="page-description">Real-time alerts config, notification preferences</div>
+                    <div class="route-path">/live-settings</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Supporting Pages -->
+        <div class="workflow-section">
+            <div class="section-title">🔧 Supporting Pages</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">👤 Profile Settings</div>
+                    <div class="page-description">User info, subscription status, logout</div>
+                    <div class="route-path">/profile</div>
+                </div>
+                
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📜 Watchlist</div>
+                    <div class="page-description">Saved signals, custom alerts, favorites</div>
+                    <div class="route-path">/watchlist</div>
+                </div>
+                
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📈 Portfolio</div>
+                    <div class="page-description">Performance tracking, P&L, trade history</div>
+                    <div class="route-path">/portfolio</div>
+                </div>
+                
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">💬 Community</div>
+                    <div class="page-description">Discussion forum, signal feedback, social features</div>
+                    <div class="route-path">/community</div>
+                </div>
+                
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">🎓 Education</div>
+                    <div class="page-description">Trading guides, strategy explanations, tutorials</div>
+                    <div class="route-path">/education</div>
+                </div>
+                
+                <div class="page-node entry-point">
+                    <div class="page-type flutter">FLUTTER</div>
+                    <div class="page-title">📞 Support</div>
+                    <div class="page-description">Help center, contact form, FAQ</div>
+                    <div class="route-path">/support</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Implementation Notes -->
+        <div class="workflow-section">
+            <div class="section-title">🛠️ Technical Implementation</div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                    <h4 style="color: #4CAF50; margin-top: 0;">🔒 Authentication Logic</h4>
+                    <div class="route-path">
+if (!user.isAuthenticated) {<br>
+&nbsp;&nbsp;return LoginScreen();<br>
+}<br>
+if (!user.isVerified) {<br>
+&nbsp;&nbsp;return VerificationScreen();<br>
+}
+                    </div>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #2196F3;">
+                    <h4 style="color: #2196F3; margin-top: 0;">💳 Subscription Gating</h4>
+                    <div class="route-path">
+switch (user.subscriptionTier) {<br>
+&nbsp;&nbsp;case FREE: return TeaserPage();<br>
+&nbsp;&nbsp;case PAID: return SignalPage();<br>
+&nbsp;&nbsp;case PREMIUM: return LiveSignalPage();<br>
+}
+                    </div>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #FF9800;">
+                    <h4 style="color: #FF9800; margin-top: 0;">🌐 WebView Integration</h4>
+                    <div class="route-path">
+WebView(<br>
+&nbsp;&nbsp;initialUrl: '/signals/ipo',<br>
+&nbsp;&nbsp;javascriptMode: enabled,<br>
+&nbsp;&nbsp;onPageFinished: inject_auth_token<br>
+);
+                    </div>
+                </div>
+                
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #9C27B0;">
+                    <h4 style="color: #9C27B0; margin-top: 0;">🔴 Live Data Stream</h4>
+                    <div class="route-path">
+if (user.isPremium) {<br>
+&nbsp;&nbsp;WebSocketChannel.connect(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;'wss://api.signals.com/live'<br>
+&nbsp;&nbsp;);<br>
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #E8F5E8, #F1F8E9); border-color: #4CAF50;"></div>
+                <span>Entry Point / Public Access</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #FFF3E0, #FFF8E1); border-color: #FF9800;"></div>
+                <span>Authentication Required</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #E3F2FD, #E8F4F8); border-color: #2196F3;"></div>
+                <span>Paid Subscription Only</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #F3E5F5, #F8E6FF); border-color: #9C27B0;"></div>
+                <span>Super-Premium Features</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #FFEBEE, #FFCDD2); border-color: #f44336;"></div>
+                <span>Blocked / Upgrade Required</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #42A5F5;"></div>
+                <span>Flutter Native Page</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FF7043;"></div>
+                <span>WebView HTML Page</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unusual Options - AMD Dark Pool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; padding: 10px; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .trading-type-badge { background: #d35400; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .signal-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #d35400; position: relative; }
+        .flow-badge { position: absolute; top: 15px; right: 15px; background: #d35400; color: #fff; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 12px; animation: flow-pulse 2s infinite; }
+        @keyframes flow-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .ticker-main { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .ticker { font-size: 28px; font-weight: bold; }
+        .strategy-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #d35400; }
+        .company-name { font-size: 14px; color: #888; margin-bottom: 12px; }
+        .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+        .price { font-size: 32px; font-weight: bold; }
+        .change { font-size: 18px; font-weight: 600; color: #00ff88; }
+        .chart-section { height: 120px; margin-bottom: 20px; position: relative; background: rgba(211, 84, 0, 0.02); border-radius: 12px; padding: 10px; }
+        .event-label { position: absolute; top: 10px; right: 10px; background: rgba(211, 84, 0, 0.8); padding: 4px 10px; border-radius: 8px; font-size: 11px; z-index: 10; }
+        .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { text-align: center; padding: 12px 8px; background: rgba(211, 84, 0, 0.05); border-radius: 10px; }
+        .stat-value { font-size: 18px; font-weight: bold; margin-bottom: 4px; color: #d35400; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .strategy-info { background: rgba(211, 84, 0, 0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(211, 84, 0, 0.1); }
+        .strategy-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #d35400; }
+        .strategy-desc { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 10px; }
+        .strategy-link { color: #00ff88; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .flow-details { background: rgba(211, 84, 0, 0.1); border: 1px solid rgba(211, 84, 0, 0.3); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .flow-details h4 { color: #d35400; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .flow-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .flow-item { font-size: 11px; color: #ccc; }
+        .flow-item strong { color: #d35400; }
+        .smart-money { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 8px; margin-top: 8px; text-align: center; }
+        .smart-money span { color: #00ff88; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">Options Flow</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="flow-badge">10K CALLS</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">AMD</span>
+            <span class="strategy-badge">UNUSUAL OPT</span>
+        </div>
+        
+        <div class="company-name">Unusual Call Buying</div>
+        
+        <div class="price-row">
+            <span class="price">$185.40</span>
+            <span class="change">+2.1%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-amd"></canvas>
+            <div class="event-label">10K calls</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value">$2.5M</div>
+                <div class="stat-label">Premium</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">10x</div>
+                <div class="stat-label">Avg Vol</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">$200</div>
+                <div class="stat-label">Strike</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Follow the Smart Money</div>
+            <div class="strategy-desc">
+                Someone just bought 10,000 August $200 calls for $2.5M premium. This is 10x normal volume 
+                for these strikes. Dark pool activity suggests institutional accumulation. Follow with smaller 
+                position or sell put spreads to reduce cost basis.
+            </div>
+            <a href="https://example.com/options-flow" class="strategy-link">
+                Live Flow Data →
+            </a>
+        </div>
+        
+        <div class="flow-details">
+            <h4>🔍 Flow Analysis</h4>
+            <div class="flow-grid">
+                <div class="flow-item"><strong>Contracts:</strong> 10,000</div>
+                <div class="flow-item"><strong>Strike:</strong> $200</div>
+                <div class="flow-item"><strong>Expiry:</strong> Aug 18</div>
+                <div class="flow-item"><strong>Premium:</strong> $2.50</div>
+                <div class="flow-item"><strong>Volume:</strong> 982% above avg</div>
+                <div class="flow-item"><strong>OI:</strong> 15,432</div>
+            </div>
+            <div class="smart-money">
+                <span>🧠 SMART MONEY ALERT - Institution likely positioned for earnings</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const amdCtx = document.getElementById('chart-amd').getContext('2d');
+        new Chart(amdCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [{
+                    label: 'Price Action',
+                    data: Array.from({length: 20}, (_, i) => 180 + Math.sin(i * 0.2) * 3 + i * 0.25).concat(Array(20).fill(null)),
+                    borderColor: '#d35400',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }, {
+                    label: 'Call Target',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => {
+                        if (i < 5) return 185.40 + i * 2;
+                        return 185.40 + 10 + (i - 5) * 0.5;
+                    })),
+                    borderColor: 'rgba(211, 84, 0, 0.5)',
+                    borderDash: [5, 5],
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: '+1',
+                    backgroundColor: 'rgba(211, 84, 0, 0.1)'
+                }, {
+                    label: 'Strike Level',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, () => 200)),
+                    borderColor: 'rgba(0, 255, 136, 0.8)',
+                    borderDash: [3, 3],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 }, line: { borderWidth: 2 } }
+            }
+        });
+    </script>
+</body>
+</html>

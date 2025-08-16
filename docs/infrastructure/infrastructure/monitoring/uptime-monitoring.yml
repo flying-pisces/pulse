@@ -1,0 +1,315 @@
+# Uptime Monitoring Configuration for Pulse Trading
+# Multi-provider uptime monitoring setup for high availability
+
+# UptimeRobot Configuration
+uptimerobot:
+  monitors:
+    - name: "Pulse Trading - Main Site"
+      url: "https://pulse-trading.com"
+      type: "HTTP"
+      interval: 300  # 5 minutes
+      timeout: 30
+      keyword_type: "exists"
+      keyword_value: "Pulse Trading"
+      http_method: "GET"
+      expected_status_codes: [200]
+      follow_redirects: true
+      ignore_ssl_errors: false
+      headers:
+        User-Agent: "UptimeRobot/2.0"
+      alert_contacts:
+        - email
+        - slack
+        - webhook
+      maintenance_windows: []
+
+    - name: "Pulse Trading - WWW Redirect"
+      url: "https://www.pulse-trading.com"
+      type: "HTTP"
+      interval: 300
+      timeout: 30
+      http_method: "GET"
+      expected_status_codes: [200, 301, 302]
+      follow_redirects: true
+
+    - name: "Pulse Trading - API Health"
+      url: "https://pulse-trading.com/api/health"
+      type: "HTTP"
+      interval: 180  # 3 minutes
+      timeout: 15
+      keyword_type: "exists"
+      keyword_value: "healthy"
+      expected_status_codes: [200]
+
+    - name: "Pulse Trading - Service Worker"
+      url: "https://pulse-trading.com/flutter_service_worker.js"
+      type: "HTTP"
+      interval: 600  # 10 minutes
+      timeout: 15
+      expected_status_codes: [200]
+      headers:
+        Cache-Control: "no-cache"
+
+    - name: "Pulse Trading - SSL Certificate"
+      url: "https://pulse-trading.com"
+      type: "SSL"
+      interval: 86400  # 24 hours
+      days_before_expiry: 30
+      alert_on_expiry: true
+
+# Pingdom Configuration
+pingdom:
+  checks:
+    - name: "Pulse Trading - Full Page Load"
+      url: "https://pulse-trading.com"
+      type: "performance"
+      interval: 300
+      probe_filters: ["region:NA", "region:EU", "region:APAC"]
+      thresholds:
+        response_time: 3000  # 3 seconds
+        uptime: 99.9
+      performance_thresholds:
+        load_time: 5000      # 5 seconds
+        first_byte: 1000     # 1 second
+        dom_ready: 3000      # 3 seconds
+      alerts:
+        - type: "sms"
+          threshold: 2  # consecutive failures
+        - type: "email"
+          threshold: 1
+        - type: "webhook"
+          url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+
+    - name: "Pulse Trading - Mobile Performance"
+      url: "https://pulse-trading.com"
+      type: "performance"
+      device_type: "mobile"
+      interval: 600
+      probe_filters: ["region:NA"]
+      thresholds:
+        response_time: 5000  # 5 seconds for mobile
+        uptime: 99.5
+
+# StatusCake Configuration  
+statuscake:
+  tests:
+    - name: "Pulse Trading - Global Monitoring"
+      url: "https://pulse-trading.com"
+      check_rate: 300
+      test_type: "HTTP"
+      timeout: 40
+      confirmation: 2
+      regions:
+        - "london"
+        - "newyork" 
+        - "singapore"
+        - "sydney"
+      status_codes: [200]
+      find_string: "Pulse Trading"
+      do_not_find: false
+      real_browser: true
+      triggers:
+        - email
+        - slack
+        - webhook
+
+    - name: "Pulse Trading - Core Web Vitals"
+      url: "https://pulse-trading.com"
+      test_type: "PAGESPEED"
+      check_rate: 3600  # hourly
+      regions: ["london"]
+      thresholds:
+        performance_score: 85
+        accessibility_score: 95
+        best_practices_score: 90
+        seo_score: 90
+      core_web_vitals:
+        lcp_threshold: 2.5  # seconds
+        fid_threshold: 100  # milliseconds
+        cls_threshold: 0.1  # score
+
+# Custom Health Check Endpoints
+health_checks:
+  endpoints:
+    - path: "/health"
+      description: "Basic health check"
+      response:
+        status: 200
+        body: '{"status": "healthy", "timestamp": "${timestamp}", "version": "${version}"}'
+        headers:
+          Content-Type: "application/json"
+          Cache-Control: "no-cache, no-store, must-revalidate"
+
+    - path: "/health/detailed"
+      description: "Detailed system health"
+      response:
+        status: 200
+        body: |
+          {
+            "status": "healthy",
+            "timestamp": "${timestamp}",
+            "version": "${version}",
+            "services": {
+              "frontend": "operational",
+              "cdn": "operational",
+              "ssl": "valid",
+              "dns": "operational"
+            },
+            "performance": {
+              "response_time_ms": "${response_time}",
+              "uptime_seconds": "${uptime}"
+            },
+            "external_dependencies": {
+              "alpaca_api": "${alpaca_status}",
+              "supabase": "${supabase_status}",
+              "firebase": "${firebase_status}"
+            }
+          }
+
+    - path: "/health/liveness"
+      description: "Kubernetes liveness probe"
+      response:
+        status: 200
+        body: '{"alive": true}'
+
+    - path: "/health/readiness"
+      description: "Kubernetes readiness probe" 
+      response:
+        status: 200
+        body: '{"ready": true, "services_ready": true}'
+
+# Synthetic Transaction Monitoring
+synthetic_monitoring:
+  transactions:
+    - name: "User Registration Flow"
+      steps:
+        - action: "navigate"
+          url: "https://pulse-trading.com"
+        - action: "click"
+          selector: "[data-testid='sign-up-button']"
+        - action: "wait"
+          timeout: 3000
+        - action: "fill"
+          selector: "[data-testid='email-input']"
+          value: "test@example.com"
+        - action: "fill"
+          selector: "[data-testid='password-input']"
+          value: "TestPassword123!"
+        - action: "click"
+          selector: "[data-testid='register-submit']"
+        - action: "wait_for"
+          selector: "[data-testid='verification-sent']"
+          timeout: 5000
+      frequency: "hourly"
+      regions: ["us-east-1", "eu-west-1"]
+      alerts:
+        failure_threshold: 1
+        success_rate_threshold: 95
+
+    - name: "Signal Loading Performance"
+      steps:
+        - action: "navigate"
+          url: "https://pulse-trading.com/signals"
+        - action: "wait_for_load_state"
+          state: "networkidle"
+        - action: "measure_performance"
+          metrics: ["lcp", "fcp", "cls", "fid"]
+      frequency: "every_15_minutes"
+      performance_budget:
+        lcp: 2500
+        fcp: 1800
+        cls: 0.1
+        fid: 100
+
+# Alert Configuration
+alerts:
+  channels:
+    email:
+      - ops@pulse-trading.com
+      - alerts@pulse-trading.com
+    
+    slack:
+      webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+      channel: "#alerts"
+      username: "UptimeBot"
+      
+    webhook:
+      url: "https://pulse-trading.com/api/webhooks/alerts"
+      headers:
+        Authorization: "Bearer ${WEBHOOK_TOKEN}"
+      retry_count: 3
+      timeout: 10
+
+  escalation:
+    - level: 1
+      wait_minutes: 0
+      channels: ["slack"]
+    - level: 2
+      wait_minutes: 15
+      channels: ["email", "slack"]
+    - level: 3
+      wait_minutes: 60
+      channels: ["email", "slack", "webhook"]
+
+  conditions:
+    critical:
+      uptime: 99.0
+      response_time: 10000  # 10 seconds
+      consecutive_failures: 3
+    
+    warning:
+      uptime: 99.5
+      response_time: 5000   # 5 seconds
+      consecutive_failures: 2
+
+# Maintenance Windows
+maintenance:
+  scheduled:
+    - name: "Weekly Maintenance"
+      start: "Sunday 02:00 UTC"
+      duration: 60  # minutes
+      recurrence: "weekly"
+      description: "Routine maintenance and updates"
+    
+    - name: "Monthly Deep Maintenance"
+      start: "First Sunday 01:00 UTC"
+      duration: 120  # minutes
+      recurrence: "monthly"
+      description: "Deep system maintenance and optimization"
+
+# Monitoring Dashboard
+dashboard:
+  widgets:
+    - type: "uptime_percentage"
+      title: "Overall Uptime (30 days)"
+      time_range: "30d"
+      
+    - type: "response_time"
+      title: "Average Response Time"
+      time_range: "24h"
+      
+    - type: "incidents"
+      title: "Recent Incidents"
+      count: 10
+      
+    - type: "ssl_certificate"
+      title: "SSL Certificate Status"
+      days_warning: 30
+      
+    - type: "performance_metrics"
+      title: "Core Web Vitals"
+      metrics: ["lcp", "fcp", "cls", "fid"]
+
+  public_status_page:
+    enabled: true
+    url: "https://status.pulse-trading.com"
+    custom_domain: true
+    components:
+      - name: "Website"
+        status: "operational"
+      - name: "API"
+        status: "operational"
+      - name: "Trading Signals"
+        status: "operational"
+      - name: "User Authentication"
+        status: "operational"

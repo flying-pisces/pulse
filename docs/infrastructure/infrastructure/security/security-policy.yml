@@ -1,0 +1,409 @@
+# Comprehensive Security Policy for Pulse Trading
+# GDPR/CCPA compliant security configuration
+
+# Content Security Policy Configuration
+content_security_policy:
+  default_src: ["'self'"]
+  script_src:
+    - "'self'"
+    - "'unsafe-inline'"  # Required for Flutter Web
+    - "'unsafe-eval'"    # Required for Dart compilation
+    - "https://www.googletagmanager.com"
+    - "https://www.google-analytics.com"
+    - "https://js.sentry-cdn.com"
+    - "https://browser.sentry-cdn.com"
+  
+  style_src:
+    - "'self'"
+    - "'unsafe-inline'"  # Required for Flutter Web styles
+    - "https://fonts.googleapis.com"
+    - "https://cdnjs.cloudflare.com"
+  
+  font_src:
+    - "'self'"
+    - "https://fonts.gstatic.com"
+    - "data:"
+  
+  img_src:
+    - "'self'"
+    - "data:"
+    - "https:"
+    - "blob:"
+  
+  connect_src:
+    - "'self'"
+    - "https://api.alpaca.markets"
+    - "https://paper-api.alpaca.markets"
+    - "wss://stream.data.alpaca.markets"
+    - "https://*.supabase.co"
+    - "wss://*.supabase.co"
+    - "https://www.googleapis.com"
+    - "https://www.google-analytics.com"
+    - "https://*.sentry.io"
+    - "https://vitals.vercel-insights.com"
+  
+  frame_src: ["'none'"]
+  frame_ancestors: ["'none'"]
+  base_uri: ["'self'"]
+  form_action: ["'self'"]
+  upgrade_insecure_requests: true
+
+# HTTP Security Headers
+security_headers:
+  strict_transport_security:
+    max_age: 31536000
+    include_subdomains: true
+    preload: true
+  
+  x_frame_options: "DENY"
+  x_content_type_options: "nosniff"
+  x_xss_protection: "1; mode=block"
+  
+  referrer_policy: "strict-origin-when-cross-origin"
+  
+  permissions_policy:
+    geolocation: "()"
+    microphone: "()"
+    camera: "()"
+    payment: "self"
+    usb: "()"
+    magnetometer: "()"
+    gyroscope: "()"
+    fullscreen: "self"
+    display_capture: "()"
+
+# CORS Configuration
+cors:
+  allowed_origins:
+    - "https://pulse-trading.com"
+    - "https://www.pulse-trading.com"
+  allowed_methods:
+    - "GET"
+    - "POST"
+    - "PUT" 
+    - "DELETE"
+    - "OPTIONS"
+  allowed_headers:
+    - "Content-Type"
+    - "Authorization"
+    - "X-Requested-With"
+    - "Accept"
+    - "Origin"
+  expose_headers:
+    - "Content-Length"
+    - "X-JSON"
+  max_age: 86400
+  credentials: true
+
+# Rate Limiting Configuration
+rate_limiting:
+  global:
+    requests_per_minute: 1000
+    burst: 100
+    
+  api_endpoints:
+    "/api/auth/login":
+      requests_per_minute: 5
+      requests_per_hour: 20
+      burst: 2
+    
+    "/api/auth/register":
+      requests_per_minute: 3
+      requests_per_hour: 10
+      burst: 1
+    
+    "/api/auth/forgot-password":
+      requests_per_minute: 2
+      requests_per_hour: 5
+      burst: 1
+    
+    "/api/signals":
+      requests_per_minute: 60
+      burst: 10
+    
+    "/api/market-data":
+      requests_per_minute: 120
+      burst: 20
+
+# DDoS Protection
+ddos_protection:
+  cloudflare:
+    security_level: "medium"
+    challenge_passage: 3600  # 1 hour
+    browser_integrity_check: true
+    server_side_exclude: true
+    
+    bot_fight_mode: true
+    super_bot_fight_mode: false  # Enterprise feature
+    
+    rate_limiting:
+      threshold: 100
+      period: 60
+      action: "challenge"
+      timeout: 86400  # 24 hours
+      
+  aws_waf:
+    rate_based_rules:
+      - name: "GeneralRateLimit"
+        limit: 2000
+        action: "block"
+        duration: 300  # 5 minutes
+        
+      - name: "LoginRateLimit"
+        limit: 100
+        action: "block" 
+        duration: 3600  # 1 hour
+        condition: "uri_path contains '/auth/login'"
+
+# SSL/TLS Configuration
+ssl_tls:
+  minimum_version: "TLSv1.2"
+  preferred_version: "TLSv1.3"
+  
+  cipher_suites:
+    - "ECDHE-RSA-AES128-GCM-SHA256"
+    - "ECDHE-RSA-AES256-GCM-SHA384"
+    - "ECDHE-RSA-CHACHA20-POLY1305"
+    - "DHE-RSA-AES128-GCM-SHA256"
+    - "DHE-RSA-AES256-GCM-SHA384"
+  
+  certificate:
+    type: "RSA"
+    key_size: 2048
+    validity_days: 90  # Let's Encrypt default
+    auto_renewal: true
+    ocsp_stapling: true
+    
+  hsts:
+    max_age: 31536000
+    include_subdomains: true
+    preload: true
+
+# Data Protection and Privacy
+data_protection:
+  gdpr_compliance:
+    enabled: true
+    data_retention_days: 1095  # 3 years
+    cookie_consent: true
+    right_to_deletion: true
+    data_portability: true
+    
+    consent_categories:
+      - name: "necessary"
+        required: true
+        description: "Essential for website functionality"
+      - name: "analytics"
+        required: false
+        description: "Help us improve our service"
+      - name: "marketing"
+        required: false
+        description: "Personalized content and ads"
+  
+  ccpa_compliance:
+    enabled: true
+    do_not_sell_link: true
+    privacy_policy_link: "https://pulse-trading.com/privacy"
+    
+  data_encryption:
+    at_rest:
+      algorithm: "AES-256"
+      key_rotation_days: 90
+    in_transit:
+      algorithm: "TLS 1.3"
+      certificate_type: "ECC"
+    
+  pii_handling:
+    tokenization: true
+    pseudonymization: true
+    data_masking: true
+    audit_logging: true
+
+# Authentication and Authorization
+authentication:
+  session_management:
+    timeout_minutes: 30
+    absolute_timeout_hours: 8
+    secure_cookies: true
+    httponly_cookies: true
+    samesite: "Strict"
+    
+  password_policy:
+    min_length: 12
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_symbols: true
+    max_age_days: 90
+    history_count: 12
+    lockout_attempts: 5
+    lockout_duration_minutes: 30
+  
+  mfa:
+    enabled: true
+    required_for_admin: true
+    methods: ["totp", "sms", "email"]
+    backup_codes: 10
+
+# API Security
+api_security:
+  authentication:
+    type: "Bearer Token"
+    jwt_expiry: 3600  # 1 hour
+    refresh_token_expiry: 86400  # 24 hours
+    
+  versioning:
+    strategy: "header"
+    current_version: "v1"
+    deprecated_versions: []
+    
+  input_validation:
+    max_request_size: "10MB"
+    allowed_content_types:
+      - "application/json"
+      - "multipart/form-data"
+    sanitize_html: true
+    validate_schemas: true
+  
+  output_encoding:
+    json_escape: true
+    html_encode: true
+    url_encode: true
+
+# Logging and Monitoring
+security_logging:
+  events:
+    - authentication_failures
+    - authorization_failures
+    - privilege_escalations
+    - data_access_violations
+    - configuration_changes
+    - suspicious_activities
+    - security_alerts
+  
+  log_retention:
+    security_logs: 2555  # 7 years
+    audit_logs: 2555     # 7 years
+    access_logs: 90      # 3 months
+    error_logs: 365      # 1 year
+  
+  siem_integration:
+    enabled: true
+    format: "CEF"  # Common Event Format
+    destinations:
+      - "syslog://siem.pulse-trading.com:514"
+      - "https://api.splunk.com/v1/events"
+
+# Incident Response
+incident_response:
+  severity_levels:
+    critical:
+      response_time_minutes: 15
+      escalation_time_minutes: 30
+      notification_channels: ["email", "sms", "slack"]
+    
+    high:
+      response_time_minutes: 60
+      escalation_time_minutes: 120
+      notification_channels: ["email", "slack"]
+    
+    medium:
+      response_time_minutes: 240
+      escalation_time_minutes: 480
+      notification_channels: ["email"]
+    
+    low:
+      response_time_minutes: 1440  # 24 hours
+      escalation_time_minutes: 2880  # 48 hours
+      notification_channels: ["email"]
+
+  playbooks:
+    data_breach:
+      immediate_actions:
+        - "Isolate affected systems"
+        - "Preserve evidence"
+        - "Notify security team"
+        - "Document incident"
+      
+      regulatory_notifications:
+        gdpr: 72  # hours
+        ccpa: 72  # hours
+        sec: 24   # hours (for financial services)
+    
+    ddos_attack:
+      mitigation_steps:
+        - "Enable DDoS protection"
+        - "Scale infrastructure"
+        - "Block malicious IPs"
+        - "Monitor traffic patterns"
+    
+    security_vulnerability:
+      assessment_time: 24  # hours
+      patch_time_critical: 24  # hours
+      patch_time_high: 72      # hours
+
+# Compliance Frameworks
+compliance:
+  frameworks:
+    - "SOC 2 Type II"
+    - "PCI DSS" 
+    - "GDPR"
+    - "CCPA"
+    - "ISO 27001"
+  
+  auditing:
+    frequency: "quarterly"
+    external_auditors: true
+    penetration_testing: "annual"
+    vulnerability_scanning: "monthly"
+  
+  documentation:
+    policies_review: "annual"
+    procedures_review: "semi-annual"
+    training_frequency: "quarterly"
+    awareness_campaigns: "monthly"
+
+# Security Testing
+security_testing:
+  automated:
+    sast: true  # Static Application Security Testing
+    dast: true  # Dynamic Application Security Testing
+    iast: true  # Interactive Application Security Testing
+    sca: true   # Software Composition Analysis
+    
+    schedule:
+      sast: "on_commit"
+      dast: "nightly"
+      sca: "weekly"
+      iast: "on_deploy"
+  
+  manual:
+    code_review: true
+    penetration_testing: "quarterly"
+    social_engineering: "annual"
+    physical_security: "annual"
+  
+  bug_bounty:
+    enabled: true
+    platform: "HackerOne"
+    scope: "*.pulse-trading.com"
+    rewards: "$100-$5000"
+    
+# Business Continuity
+business_continuity:
+  backup_strategy:
+    frequency: "continuous"
+    retention: "7 years"
+    encryption: true
+    cross_region: true
+    testing_frequency: "monthly"
+  
+  disaster_recovery:
+    rto: 4  # Recovery Time Objective (hours)
+    rpo: 1  # Recovery Point Objective (hours)
+    failover_strategy: "automated"
+    failback_strategy: "manual"
+  
+  vendor_management:
+    security_assessments: "annual"
+    contract_reviews: "annual"
+    sla_monitoring: "continuous"

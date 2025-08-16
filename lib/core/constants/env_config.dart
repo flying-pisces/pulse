@@ -14,7 +14,8 @@ class EnvConfig {
   static String get alpacaWsUrl => 
       dotenv.env['ALPACA_WS_URL'] ?? 'wss://stream.data.alpaca.markets/v2/iex';
 
-  // Supabase Configuration
+  // Database Configuration (SQLite - no longer using Supabase)
+  // Keep these for backward compatibility but they won't be used
   static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
 
@@ -45,8 +46,8 @@ class EnvConfig {
   static bool get hasAlpacaCredentials => 
       alpacaApiKey.isNotEmpty && alpacaSecretKey.isNotEmpty;
   
-  static bool get hasSupabaseCredentials => 
-      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  // Deprecated - using SQLite now
+  static bool get hasSupabaseCredentials => false;
   
   static bool get hasGoogleOAuthCredentials => 
       googleClientId.isNotEmpty;

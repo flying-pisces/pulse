@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Options Spread - TSLA Iron Condor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #000; color: #fff; padding: 10px; max-width: 420px; margin: 0 auto; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-bottom: 15px; }
+        .logo { font-size: 22px; font-weight: bold; background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .trading-type-badge { background: #e74c3c; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; text-transform: uppercase; }
+        .signal-card { background: #1a1a1a; border-radius: 16px; padding: 20px; border: 1px solid #e74c3c; position: relative; }
+        .theta-badge { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: #fff; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
+        .ticker-main { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .ticker { font-size: 28px; font-weight: bold; }
+        .strategy-badge { padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: #e74c3c; }
+        .company-name { font-size: 14px; color: #888; margin-bottom: 12px; }
+        .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+        .price { font-size: 32px; font-weight: bold; }
+        .change { font-size: 18px; font-weight: 600; color: #ff4757; }
+        .chart-section { height: 120px; margin-bottom: 20px; position: relative; background: rgba(231, 76, 60, 0.02); border-radius: 12px; padding: 10px; }
+        .event-label { position: absolute; top: 10px; right: 10px; background: rgba(231, 76, 60, 0.8); padding: 4px 10px; border-radius: 8px; font-size: 11px; z-index: 10; }
+        .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat { text-align: center; padding: 12px 8px; background: rgba(231, 76, 60, 0.05); border-radius: 10px; }
+        .stat-value { font-size: 18px; font-weight: bold; margin-bottom: 4px; color: #e74c3c; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .strategy-info { background: rgba(231, 76, 60, 0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(231, 76, 60, 0.1); }
+        .strategy-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #e74c3c; }
+        .strategy-desc { font-size: 14px; line-height: 1.5; color: #ccc; margin-bottom: 10px; }
+        .strategy-link { color: #00ff88; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .spread-details { background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 10px; padding: 12px; margin-top: 15px; }
+        .spread-details h4 { color: #e74c3c; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
+        .spread-leg { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; }
+        .spread-leg strong { color: #e74c3c; }
+        .profit-zone { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 8px; margin-top: 8px; text-align: center; }
+        .profit-zone span { color: #00ff88; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">Options Spread</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="theta-badge">Θ GANG</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">TSLA</span>
+            <span class="strategy-badge">PUT SPREAD</span>
+        </div>
+        
+        <div class="company-name">Tesla Iron Condor</div>
+        
+        <div class="price-row">
+            <span class="price">$245.80</span>
+            <span class="change">-1.2%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-tsla"></canvas>
+            <div class="event-label">IV Crush Play</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value">$3.20</div>
+                <div class="stat-label">Credit</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">72%</div>
+                <div class="stat-label">PoP</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">21d</div>
+                <div class="stat-label">DTE</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Sell 240/235 Put Spread</div>
+            <div class="strategy-desc">
+                Post-earnings IV crush play. Tesla just reported earnings and implied volatility 
+                is elevated. Sell the 240/235 put spread for $3.20 credit with 72% probability 
+                of profit. Maximum loss is $180 if Tesla closes below $235 at expiration.
+            </div>
+            <a href="https://example.com/credit-spreads" class="strategy-link">
+                Spread Calculator →
+            </a>
+        </div>
+        
+        <div class="spread-details">
+            <h4>📋 Spread Structure</h4>
+            <div class="spread-leg"><span>Sell:</span> <strong>$240 Put</strong></div>
+            <div class="spread-leg"><span>Buy:</span> <strong>$235 Put</strong></div>
+            <div class="spread-leg"><span>Credit:</span> <strong>$3.20</strong></div>
+            <div class="spread-leg"><span>Max Loss:</span> <strong>$180</strong></div>
+            <div class="spread-leg"><span>Breakeven:</span> <strong>$236.80</strong></div>
+            <div class="profit-zone">
+                <span>💰 Profit if TSLA > $236.80 at expiration</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tslaCtx = document.getElementById('chart-tsla').getContext('2d');
+        new Chart(tslaCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [{
+                    label: 'Historical',
+                    data: Array.from({length: 20}, (_, i) => 250 + Math.sin(i * 0.3) * 5 - i * 0.2).concat(Array(20).fill(null)),
+                    borderColor: '#e74c3c',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: 0.3
+                }, {
+                    label: 'Profit Zone',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, () => 240)),
+                    borderColor: 'rgba(0, 255, 136, 0.8)',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: '+1',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)'
+                }, {
+                    label: 'Expected Range',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, (_, i) => 245.80 + Math.sin(i * 0.5) * 3)),
+                    borderColor: '#e74c3c',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0
+                }, {
+                    label: 'Max Loss Zone',
+                    data: Array(20).fill(null).concat(Array.from({length: 20}, () => 235)),
+                    borderColor: 'rgba(255, 71, 87, 0.5)',
+                    borderDash: [3, 3],
+                    borderWidth: 1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 }, line: { borderWidth: 2 } }
+            }
+        });
+    </script>
+</body>
+</html>

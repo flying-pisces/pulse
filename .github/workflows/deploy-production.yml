@@ -1,0 +1,520 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: 'Deployment target'
+        required: true
+        default: 'web'
+        type: choice
+        options:
+          - web
+          - android
+          - ios
+          - all
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+
+jobs:
+  # Security and Quality Gates
+  security-scan:
+    name: Security & Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --fatal-infos
+
+      - name: Check code formatting
+        run: dart format --output=none --set-exit-if-changed lib/ test/
+
+      - name: Run security scan
+        run: |
+          flutter pub deps --json | jq '.packages[] | select(.kind=="direct" or .kind=="dev") | "\(.name)@\(.version)"' | tr -d '"' > package-list.txt
+          # Add custom security checks for sensitive files
+          if grep -r "ALPACA_API_KEY\|SUPABASE_URL" lib/ --include="*.dart" | grep -v "dotenv.env"; then
+            echo "ERROR: Hard-coded secrets detected in source code"
+            exit 1
+          fi
+
+      - name: Test coverage
+        run: |
+          flutter test --coverage
+          flutter pub global activate coverage
+          flutter pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.dart_tool/package_config.json --report-on=lib
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage/lcov.info
+          fail_ci_if_error: true
+
+  # Build and Deploy Web App
+  deploy-web:
+    name: Deploy Web Application
+    runs-on: ubuntu-latest
+    needs: [security-scan]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.deployment_target == 'web' || github.event.inputs.deployment_target == 'all'))
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure environment
+        run: |
+          cat > .env << EOF
+          ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL=${{ secrets.ALPACA_BASE_URL }}
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          APPLE_SERVICE_ID=${{ secrets.APPLE_SERVICE_ID }}
+          APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
+          APPLE_KEY_ID=${{ secrets.APPLE_KEY_ID }}
+          APP_ENV=production
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          ALPACA_WS_URL=${{ secrets.ALPACA_WS_URL }}
+          ALPHA_VANTAGE_API_KEY=${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          POLYGON_API_KEY=${{ secrets.POLYGON_API_KEY }}
+          EOF
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build web app
+        run: |
+          flutter build web --web-renderer canvaskit --release --verbose \
+            --base-href "/" \
+            --dart-define=APP_ENV=production \
+            --source-maps
+
+      - name: Optimize build artifacts
+        run: |
+          # Install optimization tools
+          npm install -g html-minifier terser clean-css-cli
+          
+          # Optimize HTML files
+          find build/web -name "*.html" -exec html-minifier --collapse-whitespace --remove-comments --minify-js --minify-css {} -o {} \;
+          
+          # Compress JavaScript files
+          find build/web -name "*.js" -not -name "*.min.js" -exec terser {} --compress --mangle --source-map -o {} \;
+          
+          # Optimize CSS files  
+          find build/web -name "*.css" -not -name "*.min.css" -exec cleancss {} -o {} \;
+
+      - name: Generate security headers
+        run: |
+          cat > build/web/_headers << 'EOF'
+          /*
+            X-Frame-Options: DENY
+            X-Content-Type-Options: nosniff
+            X-XSS-Protection: 1; mode=block
+            Referrer-Policy: strict-origin-when-cross-origin
+            Permissions-Policy: geolocation=(), microphone=(), camera=()
+            Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+            Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.alpaca.markets https://paper-api.alpaca.markets wss://stream.data.alpaca.markets https://*.supabase.co wss://*.supabase.co https://www.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+            
+          /assets/*
+            Cache-Control: public, max-age=31536000, immutable
+            
+          /icons/*
+            Cache-Control: public, max-age=31536000, immutable
+            
+          *.js
+            Cache-Control: public, max-age=31536000, immutable
+            
+          *.css
+            Cache-Control: public, max-age=31536000, immutable
+            
+          /
+            Cache-Control: public, max-age=0, must-revalidate
+            
+          /index.html
+            Cache-Control: public, max-age=0, must-revalidate
+          EOF
+
+      - name: Create robots.txt
+        run: |
+          cat > build/web/robots.txt << 'EOF'
+          User-agent: *
+          Disallow: /admin
+          Disallow: /api
+          Disallow: /_internal
+          Allow: /
+          
+          Sitemap: https://pulse-trading.com/sitemap.xml
+          EOF
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: build/web
+          vercel-args: --prod
+          alias-domains: |
+            pulse-trading.com
+            www.pulse-trading.com
+
+      - name: Deploy to Netlify (Backup)
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: build/web
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 10
+
+      - name: Notify deployment status
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # Build Android App
+  build-android:
+    name: Build Android APK/AAB
+    runs-on: ubuntu-latest
+    needs: [security-scan]
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.deployment_target == 'android' || github.event.inputs.deployment_target == 'all')
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Configure environment
+        run: |
+          cat > .env << EOF
+          ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL=${{ secrets.ALPACA_BASE_URL }}
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          APP_ENV=production
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          EOF
+
+      - name: Decode Android keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/release-keystore.jks
+
+      - name: Configure Android signing
+        run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release-keystore.jks
+          EOF
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Android AAB
+        run: flutter build appbundle --release --verbose
+
+      - name: Build Android APK
+        run: flutter build apk --release --verbose --split-per-abi
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: build/app/outputs/apk/release/*.apk
+
+      - name: Deploy to Google Play Internal Testing
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.example.pulse
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed
+
+  # Build iOS App  
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    needs: [security-scan]
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.deployment_target == 'ios' || github.event.inputs.deployment_target == 'all')
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Configure environment
+        run: |
+          cat > .env << EOF
+          ALPACA_API_KEY=${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY=${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL=${{ secrets.ALPACA_BASE_URL }}
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          APP_ENV=production
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          EOF
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Import certificates
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.IOS_CERTIFICATES_PASSWORD }}
+
+      - name: Import provisioning profiles
+        uses: apple-actions/download-provisioning-profiles@v2
+        with:
+          bundle-id: com.example.pulse
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build iOS app
+        run: |
+          flutter build ios --release --no-codesign --verbose
+          
+          # Archive the app
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            -allowProvisioningUpdates \
+            CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        run: |
+          # Create export options
+          cat > ios/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>${{ secrets.IOS_TEAM_ID }}</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>compileBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath build/Runner.xcarchive \
+            -exportPath build/ios \
+            -exportOptionsPlist ios/ExportOptions.plist
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: build/ios/Runner.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: build/ios/Runner.ipa
+
+  # Performance Testing
+  performance-test:
+    name: Performance & Load Testing
+    runs-on: ubuntu-latest
+    needs: [deploy-web]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun --upload.target=temporary-public-storage --collect.url=https://pulse-trading.com
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Performance budget check
+        run: |
+          # Add custom performance checks
+          node -e "
+          const fs = require('fs');
+          const results = JSON.parse(fs.readFileSync('.lighthouseci/lhr-*.json'));
+          const performance = results.categories.performance.score * 100;
+          const fcp = results.audits['first-contentful-paint'].numericValue;
+          const lcp = results.audits['largest-contentful-paint'].numericValue;
+          
+          console.log(\`Performance Score: \${performance}\`);
+          console.log(\`First Contentful Paint: \${fcp}ms\`);
+          console.log(\`Largest Contentful Paint: \${lcp}ms\`);
+          
+          if (performance < 90) {
+            throw new Error('Performance score below threshold');
+          }
+          if (lcp > 2500) {
+            throw new Error('LCP above 2.5s threshold');
+          }
+          "
+
+  # Security Scan Post-Deploy
+  security-post-deploy:
+    name: Post-Deployment Security Scan
+    runs-on: ubuntu-latest
+    needs: [deploy-web]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Security headers check
+        run: |
+          curl -I https://pulse-trading.com | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security)" || exit 1
+
+      - name: SSL/TLS check
+        run: |
+          echo | openssl s_client -connect pulse-trading.com:443 2>/dev/null | openssl x509 -noout -dates
+          
+      - name: OWASP ZAP scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'https://pulse-trading.com'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+  # Monitoring Setup
+  post-deploy-monitoring:
+    name: Setup Monitoring & Alerts
+    runs-on: ubuntu-latest
+    needs: [deploy-web]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Setup Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: pulse-trading
+        with:
+          environment: production
+          version: ${{ github.sha }}
+
+      - name: Configure uptime monitoring
+        run: |
+          # Setup UptimeRobot monitoring via API
+          curl -X POST https://api.uptimerobot.com/v2/newMonitor \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -H "Cache-Control: no-cache" \
+            -d "api_key=${{ secrets.UPTIMEROBOT_API_KEY }}&format=json&type=1&url=https://pulse-trading.com&friendly_name=Pulse Trading Production&interval=300&timeout=30&http_method=1"
+
+      - name: Update status page
+        run: |
+          # Update status page with deployment information
+          curl -X POST https://api.statuspage.io/v1/pages/${{ secrets.STATUSPAGE_PAGE_ID }}/incidents \
+            -H "Authorization: OAuth ${{ secrets.STATUSPAGE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "incident": {
+                "name": "Deployment Completed - v${{ github.sha }}",
+                "status": "resolved",
+                "impact_override": "none",
+                "body": "Production deployment completed successfully with version ${{ github.sha }}"
+              }
+            }'

@@ -1,0 +1,277 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "Requests", "DistributionId", "${cloudfront_distribution_id}"],
+          [".", "BytesDownloaded", ".", "."],
+          [".", "BytesUploaded", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "CloudFront Traffic Overview",
+        "view": "timeSeries",
+        "stacked": false,
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "4xxErrorRate", "DistributionId", "${cloudfront_distribution_id}"],
+          [".", "5xxErrorRate", ".", "."],
+          [".", "TotalErrorRate", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Error Rates",
+        "view": "timeSeries",
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 10
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "Error Rate Threshold",
+              "value": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "CacheHitRate", "DistributionId", "${cloudfront_distribution_id}"]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Cache Hit Rate",
+        "view": "timeSeries",
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 100
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "Target Cache Hit Rate",
+              "value": 80
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "OriginLatency", "DistributionId", "${cloudfront_distribution_id}"]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Origin Latency",
+        "view": "timeSeries",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/S3", "BucketSizeBytes", "BucketName", "${s3_bucket_name}", "StorageType", "StandardStorage"],
+          [".", "NumberOfObjects", ".", ".", ".", "AllStorageTypes"]
+        ],
+        "period": 86400,
+        "stat": "Average",
+        "region": "${aws_region}",
+        "title": "S3 Storage Metrics",
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8,
+      "y": 12,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/S3", "AllRequests", "BucketName", "${s3_bucket_name}"],
+          [".", "GetRequests", ".", "."],
+          [".", "PutRequests", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "${aws_region}",
+        "title": "S3 Request Metrics",
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16,
+      "y": 12,
+      "width": 8,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/S3", "4xxErrors", "BucketName", "${s3_bucket_name}"],
+          [".", "5xxErrors", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "${aws_region}",
+        "title": "S3 Errors",
+        "view": "timeSeries",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 18,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/WAFV2", "AllowedRequests", "WebACL", "pulse-trading-waf", "Region", "CloudFront"],
+          [".", "BlockedRequests", ".", ".", ".", "."],
+          [".", "CountedRequests", ".", ".", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "WAF Request Metrics",
+        "view": "timeSeries",
+        "stacked": false
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 24,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "query": "SOURCE '/aws/cloudfront/${cloudfront_distribution_id}' | fields @timestamp, @message\n| filter @message like /ERROR/\n| sort @timestamp desc\n| limit 100",
+        "region": "us-east-1",
+        "title": "Recent Errors",
+        "view": "table"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 30,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["CWAgent", "mem_used_percent", "InstanceId", "i-1234567890abcdef0"],
+          [".", "cpu_usage_idle", ".", "."],
+          [".", "disk_used_percent", ".", "."]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "${aws_region}",
+        "title": "System Performance (if applicable)",
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "number",
+      "x": 12,
+      "y": 30,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "Requests", "DistributionId", "${cloudfront_distribution_id}"]
+        ],
+        "period": 3600,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "Hourly Requests",
+        "view": "singleValue"
+      }
+    },
+    {
+      "type": "number",
+      "x": 18,
+      "y": 30,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          ["AWS/CloudFront", "CacheHitRate", "DistributionId", "${cloudfront_distribution_id}"]
+        ],
+        "period": 3600,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Cache Hit Rate %",
+        "view": "singleValue"
+      }
+    }
+  ],
+  "annotations": {
+    "horizontal": [
+      {
+        "label": "High Error Rate Alert",
+        "value": 5
+      },
+      {
+        "label": "Cache Hit Rate Target",
+        "value": 80
+      }
+    ]
+  },
+  "period": 300,
+  "start": "-PT6H",
+  "end": "now",
+  "timezone": "UTC"
+}

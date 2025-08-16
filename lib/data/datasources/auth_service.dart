@@ -104,7 +104,7 @@ class AuthServiceImpl implements AuthService {
         providerId: credential.userIdentifier,
         additionalUserInfo: {
           'provider': 'apple',
-          'isNewUser': credential.realUserStatus == RealUserStatus.likelyReal,
+          'isNewUser': false, // Apple doesn't provide this info reliably
           'profile': {
             'email': credential.email,
             'name': fullName,

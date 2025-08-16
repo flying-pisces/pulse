@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPO Today - CRCL Hot IPO Play</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            padding: 10px;
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5px;
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .trading-type-badge {
+            background: linear-gradient(135deg, #ff4757, #ff6348);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .signal-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1515 100%);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #ff4757;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hot-label {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff4757, #ff6348);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            animation: hot-pulse 2s infinite;
+        }
+        
+        @keyframes hot-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .ticker-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .ticker {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .strategy-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #ff4757, #ff6348);
+        }
+        
+        .company-name {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+        
+        .price-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .change {
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+        
+        .chart-section {
+            height: 120px;
+            margin-bottom: 20px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 10px;
+        }
+        
+        .event-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+        
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #00ff88;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .strategy-info {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .strategy-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ff4757;
+        }
+        
+        .strategy-desc {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .strategy-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .strategy-link:hover {
+            color: #00d4ff;
+        }
+        
+        .risk-warning {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+        
+        .risk-warning h4 {
+            color: #ff4757;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        
+        .risk-warning p {
+            font-size: 11px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SignalPro</div>
+        <div class="trading-type-badge">IPO Today</div>
+    </div>
+    
+    <div class="signal-card">
+        <div class="hot-label">🔥 HOT</div>
+        
+        <div class="ticker-main">
+            <span class="ticker">CRCL</span>
+            <span class="strategy-badge">IPO TODAY</span>
+        </div>
+        
+        <div class="company-name">Circle Internet Group</div>
+        
+        <div class="price-row">
+            <span class="price">$69.00</span>
+            <span class="change">+122.6%</span>
+        </div>
+        
+        <div class="chart-section">
+            <canvas id="chart-crcl"></canvas>
+            <div class="event-label">IPO $31 → $103 peak</div>
+        </div>
+        
+        <div class="key-stats">
+            <div class="stat">
+                <div class="stat-value">223%</div>
+                <div class="stat-label">Day 1 High</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">$6.8B</div>
+                <div class="stat-label">Valuation</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">46M</div>
+                <div class="stat-label">Volume</div>
+            </div>
+        </div>
+        
+        <div class="strategy-info">
+            <div class="strategy-title">Hot IPO Momentum Play</div>
+            <div class="strategy-desc">
+                Stablecoin leader Circle went public and tripled on debut day. ARK Invest bought $150M worth of shares. 
+                Watch for a dip to $60-65 range for potential entry point. This follows a similar pattern to the Coinbase IPO - 
+                expect high volatility in first weeks of trading.
+            </div>
+            <a href="https://example.com/ipo-trading-strategy" class="strategy-link">
+                IPO Trading Playbook →
+            </a>
+        </div>
+        
+        <div class="risk-warning">
+            <h4>⚠️ IPO Risk Warning</h4>
+            <p>IPO stocks are extremely volatile. Lock-up periods can cause selling pressure. Only trade with money you can afford to lose. Consider position sizing carefully.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize CRCL IPO Chart
+        const crclCtx = document.getElementById('chart-crcl').getContext('2d');
+        const currentPrice = 69;
+        
+        new Chart(crclCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 40}, (_, i) => i - 20),
+                datasets: [
+                    {
+                        label: 'IPO Price Action',
+                        data: Array.from({length: 20}, (_, i) => {
+                            if (i < 2) return 31; // IPO price
+                            if (i < 4) return 31 + (103 - 31) * (i - 2) / 2; // Spike to peak
+                            if (i < 10) return 103 - (103 - 69) * (i - 4) / 6; // Selloff to current
+                            return 69 + Math.sin((i - 10) * 0.3) * 3; // Current trading
+                        }).concat(Array(20).fill(null)),
+                        borderColor: '#ff4757',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Bullish Scenario',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => currentPrice + i * 2 + Math.pow(i, 1.1))
+                        ),
+                        borderColor: 'rgba(255, 71, 87, 0.4)',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: '+1',
+                        backgroundColor: 'rgba(255, 71, 87, 0.1)'
+                    },
+                    {
+                        label: 'Expected Path',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => currentPrice + i * 0.8)
+                        ),
+                        borderColor: '#ff4757',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Bearish Scenario',
+                        data: Array(20).fill(null).concat(
+                            Array.from({length: 20}, (_, i) => currentPrice - i * 1.5 - Math.pow(i, 1.05))
+                        ),
+                        borderColor: 'rgba(255, 71, 87, 0.4)',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { display: false }
+                },
+                elements: {
+                    point: { radius: 0 },
+                    line: { borderWidth: 2 }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
