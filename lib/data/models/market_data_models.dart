@@ -415,7 +415,7 @@ class MarketDataUtils {
     final mean = returns.reduce((a, b) => a + b) / returns.length;
     final variance = returns.map((r) => (r - mean) * (r - mean)).reduce((a, b) => a + b) / returns.length;
     
-    return variance.isFinite ? variance.abs().sqrt() : 0.0;
+    return variance.isFinite ? sqrt(variance.abs()) : 0.0;
   }
 
   static Map<String, double> calculateTechnicalIndicators(List<BarData> bars) {

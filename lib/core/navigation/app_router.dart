@@ -13,6 +13,7 @@ import '../../presentation/pages/watchlist/watchlist_page.dart';
 import '../../presentation/pages/profile/profile_page.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/pages/test_setup_page.dart'; // Add for testing
+import '../../presentation/pages/market_data_test_page.dart'; // Add for market data testing
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -42,6 +43,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/test-setup',
         name: 'test-setup',
         builder: (context, state) => const TestSetupPage(),
+      ),
+      
+      // Market Data Test Page (for development)
+      GoRoute(
+        path: '/market-data-test',
+        name: 'market-data-test',
+        builder: (context, state) => const MarketDataTestPage(),
       ),
       
       // Splash Screen

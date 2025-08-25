@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/services/pocketbase_service.dart';
 import '../../core/constants/env_config.dart';
 
@@ -500,6 +501,13 @@ class _TestSetupPageState extends ConsumerState<TestSetupPage> {
                           },
                           icon: const Icon(Icons.clear),
                           label: const Text('Clear Form'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.go('/market-data-test');
+                          },
+                          icon: const Icon(Icons.show_chart),
+                          label: const Text('Market Data Test'),
                         ),
                       ],
                     ),

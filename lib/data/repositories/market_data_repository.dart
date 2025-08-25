@@ -73,7 +73,7 @@ class AlpacaMarketDataRepository implements MarketDataRepository {
   Future<Map<String, BarData>> getLatestBars(List<String> symbols) async {
     try {
       final symbolsString = symbols.join(',');
-      final response = await _apiService.getLatestBars(symbolsString);
+      final response = await _apiService.getLatestBars(symbolsString, null);
       return response.bars;
     } on DioException catch (e) {
       throw MarketDataException(
@@ -88,7 +88,7 @@ class AlpacaMarketDataRepository implements MarketDataRepository {
   @override
   Future<QuoteData> getLatestQuote(String symbol) async {
     try {
-      final response = await _apiService.getLatestQuote(symbol);
+      final response = await _apiService.getLatestQuote(symbol, null);
       return response.quote;
     } on DioException catch (e) {
       throw MarketDataException(
@@ -103,7 +103,7 @@ class AlpacaMarketDataRepository implements MarketDataRepository {
   @override
   Future<TradeData> getLatestTrade(String symbol) async {
     try {
-      final response = await _apiService.getLatestTrade(symbol);
+      final response = await _apiService.getLatestTrade(symbol, null);
       return response.trade;
     } on DioException catch (e) {
       throw MarketDataException(
@@ -151,7 +151,7 @@ class AlpacaMarketDataRepository implements MarketDataRepository {
   Future<Map<String, SnapshotData>> getSnapshots(List<String> symbols) async {
     try {
       final symbolsString = symbols.join(',');
-      final response = await _apiService.getSnapshots(symbolsString);
+      final response = await _apiService.getSnapshots(symbolsString, null);
       return response.snapshots;
     } on DioException catch (e) {
       throw MarketDataException(

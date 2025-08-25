@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:json_annotation/json_annotation.dart';
 import '../models/market_data_models.dart';
 
 part 'alpaca_api_service.g.dart';
