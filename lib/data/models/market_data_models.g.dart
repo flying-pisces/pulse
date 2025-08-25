@@ -7,22 +7,22 @@ part of 'market_data_models.dart';
 // **************************************************************************
 
 HistoricalBarsResponse _$HistoricalBarsResponseFromJson(
-        Map<String, dynamic> json) =>
-    HistoricalBarsResponse(
-      bars: (json['bars'] as List<dynamic>)
-          .map((e) => BarData.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      nextPageToken: json['next_page_token'] as String?,
-      symbol: json['symbol'] as String,
-    );
+  Map<String, dynamic> json,
+) => HistoricalBarsResponse(
+  bars: (json['bars'] as List<dynamic>)
+      .map((e) => BarData.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  nextPageToken: json['next_page_token'] as String?,
+  symbol: json['symbol'] as String,
+);
 
 Map<String, dynamic> _$HistoricalBarsResponseToJson(
-        HistoricalBarsResponse instance) =>
-    <String, dynamic>{
-      'bars': instance.bars,
-      'next_page_token': instance.nextPageToken,
-      'symbol': instance.symbol,
-    };
+  HistoricalBarsResponse instance,
+) => <String, dynamic>{
+  'bars': instance.bars,
+  'next_page_token': instance.nextPageToken,
+  'symbol': instance.symbol,
+};
 
 LatestBarsResponse _$LatestBarsResponseFromJson(Map<String, dynamic> json) =>
     LatestBarsResponse(
@@ -32,31 +32,29 @@ LatestBarsResponse _$LatestBarsResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LatestBarsResponseToJson(LatestBarsResponse instance) =>
-    <String, dynamic>{
-      'bars': instance.bars,
-    };
+    <String, dynamic>{'bars': instance.bars};
 
 BarData _$BarDataFromJson(Map<String, dynamic> json) => BarData(
-      timestamp: json['t'] as String,
-      open: (json['o'] as num).toDouble(),
-      high: (json['h'] as num).toDouble(),
-      low: (json['l'] as num).toDouble(),
-      close: (json['c'] as num).toDouble(),
-      volume: (json['v'] as num).toInt(),
-      tradeCount: (json['n'] as num?)?.toInt(),
-      vwap: (json['vw'] as num?)?.toDouble(),
-    );
+  timestamp: json['t'] as String,
+  open: (json['o'] as num).toDouble(),
+  high: (json['h'] as num).toDouble(),
+  low: (json['l'] as num).toDouble(),
+  close: (json['c'] as num).toDouble(),
+  volume: (json['v'] as num).toInt(),
+  tradeCount: (json['n'] as num?)?.toInt(),
+  vwap: (json['vw'] as num?)?.toDouble(),
+);
 
 Map<String, dynamic> _$BarDataToJson(BarData instance) => <String, dynamic>{
-      't': instance.timestamp,
-      'o': instance.open,
-      'h': instance.high,
-      'l': instance.low,
-      'c': instance.close,
-      'v': instance.volume,
-      'n': instance.tradeCount,
-      'vw': instance.vwap,
-    };
+  't': instance.timestamp,
+  'o': instance.open,
+  'h': instance.high,
+  'l': instance.low,
+  'c': instance.close,
+  'v': instance.volume,
+  'n': instance.tradeCount,
+  'vw': instance.vwap,
+};
 
 LatestQuoteResponse _$LatestQuoteResponseFromJson(Map<String, dynamic> json) =>
     LatestQuoteResponse(
@@ -65,34 +63,30 @@ LatestQuoteResponse _$LatestQuoteResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LatestQuoteResponseToJson(
-        LatestQuoteResponse instance) =>
-    <String, dynamic>{
-      'symbol': instance.symbol,
-      'quote': instance.quote,
-    };
+  LatestQuoteResponse instance,
+) => <String, dynamic>{'symbol': instance.symbol, 'quote': instance.quote};
 
 QuoteData _$QuoteDataFromJson(Map<String, dynamic> json) => QuoteData(
-      timestamp: json['t'] as String,
-      askExchange: json['ax'] as String?,
-      askPrice: (json['ap'] as num).toDouble(),
-      askSize: (json['as'] as num).toInt(),
-      bidExchange: json['bx'] as String?,
-      bidPrice: (json['bp'] as num).toDouble(),
-      bidSize: (json['bs'] as num).toInt(),
-      conditions:
-          (json['c'] as List<dynamic>?)?.map((e) => e as String).toList(),
-    );
+  timestamp: json['t'] as String,
+  askExchange: json['ax'] as String?,
+  askPrice: (json['ap'] as num).toDouble(),
+  askSize: (json['as'] as num).toInt(),
+  bidExchange: json['bx'] as String?,
+  bidPrice: (json['bp'] as num).toDouble(),
+  bidSize: (json['bs'] as num).toInt(),
+  conditions: (json['c'] as List<dynamic>?)?.map((e) => e as String).toList(),
+);
 
 Map<String, dynamic> _$QuoteDataToJson(QuoteData instance) => <String, dynamic>{
-      't': instance.timestamp,
-      'ax': instance.askExchange,
-      'ap': instance.askPrice,
-      'as': instance.askSize,
-      'bx': instance.bidExchange,
-      'bp': instance.bidPrice,
-      'bs': instance.bidSize,
-      'c': instance.conditions,
-    };
+  't': instance.timestamp,
+  'ax': instance.askExchange,
+  'ap': instance.askPrice,
+  'as': instance.askSize,
+  'bx': instance.bidExchange,
+  'bp': instance.bidPrice,
+  'bs': instance.bidSize,
+  'c': instance.conditions,
+};
 
 LatestTradeResponse _$LatestTradeResponseFromJson(Map<String, dynamic> json) =>
     LatestTradeResponse(
@@ -101,39 +95,35 @@ LatestTradeResponse _$LatestTradeResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LatestTradeResponseToJson(
-        LatestTradeResponse instance) =>
-    <String, dynamic>{
-      'symbol': instance.symbol,
-      'trade': instance.trade,
-    };
+  LatestTradeResponse instance,
+) => <String, dynamic>{'symbol': instance.symbol, 'trade': instance.trade};
 
 TradeData _$TradeDataFromJson(Map<String, dynamic> json) => TradeData(
-      timestamp: json['t'] as String,
-      exchange: json['x'] as String?,
-      price: (json['p'] as num).toDouble(),
-      size: (json['s'] as num).toInt(),
-      conditions:
-          (json['c'] as List<dynamic>?)?.map((e) => e as String).toList(),
-      id: (json['i'] as num?)?.toInt(),
-      tape: json['z'] as String?,
-    );
+  timestamp: json['t'] as String,
+  exchange: json['x'] as String?,
+  price: (json['p'] as num).toDouble(),
+  size: (json['s'] as num).toInt(),
+  conditions: (json['c'] as List<dynamic>?)?.map((e) => e as String).toList(),
+  id: (json['i'] as num?)?.toInt(),
+  tape: json['z'] as String?,
+);
 
 Map<String, dynamic> _$TradeDataToJson(TradeData instance) => <String, dynamic>{
-      't': instance.timestamp,
-      'x': instance.exchange,
-      'p': instance.price,
-      's': instance.size,
-      'c': instance.conditions,
-      'i': instance.id,
-      'z': instance.tape,
-    };
+  't': instance.timestamp,
+  'x': instance.exchange,
+  'p': instance.price,
+  's': instance.size,
+  'c': instance.conditions,
+  'i': instance.id,
+  'z': instance.tape,
+};
 
 NewsResponse _$NewsResponseFromJson(Map<String, dynamic> json) => NewsResponse(
-      news: (json['news'] as List<dynamic>)
-          .map((e) => NewsArticle.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      nextPageToken: json['next_page_token'] as String?,
-    );
+  news: (json['news'] as List<dynamic>)
+      .map((e) => NewsArticle.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  nextPageToken: json['next_page_token'] as String?,
+);
 
 Map<String, dynamic> _$NewsResponseToJson(NewsResponse instance) =>
     <String, dynamic>{
@@ -142,18 +132,17 @@ Map<String, dynamic> _$NewsResponseToJson(NewsResponse instance) =>
     };
 
 NewsArticle _$NewsArticleFromJson(Map<String, dynamic> json) => NewsArticle(
-      id: (json['id'] as num).toInt(),
-      headline: json['headline'] as String,
-      author: json['author'] as String,
-      createdAt: json['created_at'] as String,
-      updatedAt: json['updated_at'] as String,
-      summary: json['summary'] as String,
-      content: json['content'] as String?,
-      symbols:
-          (json['symbols'] as List<dynamic>).map((e) => e as String).toList(),
-      url: json['url'] as String,
-      source: json['source'] as String,
-    );
+  id: (json['id'] as num).toInt(),
+  headline: json['headline'] as String,
+  author: json['author'] as String,
+  createdAt: json['created_at'] as String,
+  updatedAt: json['updated_at'] as String,
+  summary: json['summary'] as String,
+  content: json['content'] as String?,
+  symbols: (json['symbols'] as List<dynamic>).map((e) => e as String).toList(),
+  url: json['url'] as String,
+  source: json['source'] as String,
+);
 
 Map<String, dynamic> _$NewsArticleToJson(NewsArticle instance) =>
     <String, dynamic>{
@@ -177,27 +166,25 @@ SnapshotsResponse _$SnapshotsResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$SnapshotsResponseToJson(SnapshotsResponse instance) =>
-    <String, dynamic>{
-      'snapshots': instance.snapshots,
-    };
+    <String, dynamic>{'snapshots': instance.snapshots};
 
 SnapshotData _$SnapshotDataFromJson(Map<String, dynamic> json) => SnapshotData(
-      latestTrade: json['latestTrade'] == null
-          ? null
-          : TradeData.fromJson(json['latestTrade'] as Map<String, dynamic>),
-      latestQuote: json['latestQuote'] == null
-          ? null
-          : QuoteData.fromJson(json['latestQuote'] as Map<String, dynamic>),
-      minuteBar: json['minuteBar'] == null
-          ? null
-          : BarData.fromJson(json['minuteBar'] as Map<String, dynamic>),
-      dailyBar: json['dailyBar'] == null
-          ? null
-          : BarData.fromJson(json['dailyBar'] as Map<String, dynamic>),
-      prevDailyBar: json['prevDailyBar'] == null
-          ? null
-          : BarData.fromJson(json['prevDailyBar'] as Map<String, dynamic>),
-    );
+  latestTrade: json['latestTrade'] == null
+      ? null
+      : TradeData.fromJson(json['latestTrade'] as Map<String, dynamic>),
+  latestQuote: json['latestQuote'] == null
+      ? null
+      : QuoteData.fromJson(json['latestQuote'] as Map<String, dynamic>),
+  minuteBar: json['minuteBar'] == null
+      ? null
+      : BarData.fromJson(json['minuteBar'] as Map<String, dynamic>),
+  dailyBar: json['dailyBar'] == null
+      ? null
+      : BarData.fromJson(json['dailyBar'] as Map<String, dynamic>),
+  prevDailyBar: json['prevDailyBar'] == null
+      ? null
+      : BarData.fromJson(json['prevDailyBar'] as Map<String, dynamic>),
+);
 
 Map<String, dynamic> _$SnapshotDataToJson(SnapshotData instance) =>
     <String, dynamic>{

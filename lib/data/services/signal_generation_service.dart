@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:math';
 import '../models/market_data_models.dart';
 import '../repositories/market_data_repository.dart';
 import '../../core/constants/env_config.dart';
+import '../../domain/models/signal_risk_assessment.dart';
+import '../../domain/models/user_risk_profile.dart';
 
 // Signal Generation Service
 class SignalGenerationService {
@@ -438,7 +441,7 @@ class SignalGenerationService {
     for (int i = 0; i < count && i < symbols.length; i++) {
       final symbol = symbols[i];
       final change = (random.nextDouble() * 10 - 5); // -5% to +5%
-      final price = 50 + random.nextDouble() * 400; // $50 to $450
+      final price = (50 + random.nextDouble() * 400).toDouble(); // $50 to $450
       final isUpside = change > 0;
 
       signals.add(GeneratedSignal(
@@ -453,7 +456,7 @@ class SignalGenerationService {
         change: change,
         targetPrice: price * (isUpside ? 1.05 : 0.95),
         stopLoss: price * (isUpside ? 0.97 : 1.03),
-        confidenceScore: 50 + random.nextDouble() * 40, // 50-90%
+        confidenceScore: (50 + random.nextDouble() * 40).toDouble(), // 50-90%
         validUntil: now.add(Duration(hours: 1 + random.nextInt(6))),
         generatedAt: now,
         metadata: {
@@ -483,6 +486,7 @@ class GeneratedSignal {
   final DateTime validUntil;
   final DateTime generatedAt;
   final Map<String, dynamic> metadata;
+  final SignalRiskAssessment? riskAssessment;
 
   GeneratedSignal({
     required this.id,
@@ -499,6 +503,7 @@ class GeneratedSignal {
     required this.validUntil,
     required this.generatedAt,
     required this.metadata,
+    this.riskAssessment,
   });
 
   bool get isValid => DateTime.now().isBefore(validUntil);
@@ -506,6 +511,33 @@ class GeneratedSignal {
   
   String get changeString => '${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%';
   String get confidenceString => '${confidenceScore.round()}%';
+  
+  // Risk level for quick access
+  RiskLevel get riskLevel => riskAssessment?.riskLevel ?? RiskLevel.medium;
+  int get riskScore => riskAssessment?.overallRiskScore ?? 50;
+  double get riskRewardRatio => riskAssessment?.riskRewardRatio ?? 1.0;
+  
+  // Check if signal matches user's risk profile
+  bool matchesUserRiskProfile(UserRiskProfile profile) {
+    final signalRisk = riskScore;
+    final userTolerance = profile.riskTolerance[type.riskKey] ?? 1.0;
+    final adjustedRisk = signalRisk * userTolerance;
+    
+    // Check if signal risk is within user's acceptable range
+    return adjustedRisk <= profile.riskRewardAppetite + 10; // 10 point buffer
+  }
+  
+  // Get recommended position size based on user profile
+  double getRecommendedPositionSize(UserRiskProfile profile) {
+    final baseSize = profile.maxPositionSize;
+    final riskMultiplier = riskScore / 100.0;
+    final confidence = confidenceScore / 100.0;
+    
+    // Reduce position size for higher risk, increase for higher confidence
+    final adjustedSize = baseSize * confidence * (1.0 - (riskMultiplier * 0.5));
+    
+    return math.max(adjustedSize, 0.01); // Minimum 1% position
+  }
   
   // Convert to PocketBase signal format for storage
   Map<String, dynamic> toPocketBaseSignal() {
@@ -519,24 +551,52 @@ class GeneratedSignal {
       'target_price': targetPrice,
       'stop_loss': stopLoss,
       'confidence_score': confidenceScore.round(),
+      'risk_score': riskScore,
+      'risk_level': riskLevel.name,
+      'risk_reward_ratio': riskRewardRatio,
       'valid_until': validUntil.toIso8601String(),
-      'metadata': metadata,
+      'metadata': {
+        ...metadata,
+        'risk_assessment': riskAssessment?.toJson(),
+      },
       'is_active': isValid,
       'auto_generated': true,
     };
+  }
+
+  // Create enhanced signal with risk assessment
+  GeneratedSignal withRiskAssessment(SignalRiskAssessment assessment) {
+    return GeneratedSignal(
+      id: id,
+      symbol: symbol,
+      type: type,
+      strategy: strategy,
+      title: title,
+      description: description,
+      price: price,
+      change: change,
+      targetPrice: targetPrice,
+      stopLoss: stopLoss,
+      confidenceScore: confidenceScore,
+      validUntil: validUntil,
+      generatedAt: generatedAt,
+      metadata: metadata,
+      riskAssessment: assessment,
+    );
   }
 }
 
 // Signal Types
 enum SignalType {
-  preMarket('Pre-Market'),
-  earnings('Earnings'),
-  momentum('Momentum'),
-  volume('Volume Alert'),
-  breakout('Breakout'),
-  options('Options'),
-  crypto('Crypto');
+  preMarket('Pre-Market', 'momentum'),
+  earnings('Earnings', 'earnings'),
+  momentum('Momentum', 'momentum'),
+  volume('Volume Alert', 'volume_spike'),
+  breakout('Breakout', 'breakout'),
+  options('Options', '0dte_options'),
+  crypto('Crypto', 'swing_trade');
 
-  const SignalType(this.displayName);
+  const SignalType(this.displayName, this.riskKey);
   final String displayName;
+  final String riskKey; // Maps to risk tolerance keys in UserRiskProfile
 }

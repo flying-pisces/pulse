@@ -57,3 +57,7 @@ firebase-config.json
 # OAuth configuration files
 oauth-config.json
 client_secret*.json
+
+# Documentation and research repositories
+docs/alpaca-trade-api-python/
+docs/alpaca-py/

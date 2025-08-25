@@ -14,6 +14,7 @@ import '../../presentation/pages/profile/profile_page.dart';
 import '../../presentation/providers/auth_provider.dart';
 import '../../presentation/pages/test_setup_page.dart'; // Add for testing
 import '../../presentation/pages/market_data_test_page.dart'; // Add for market data testing
+import '../../presentation/pages/alpaca/alpaca_api_page.dart'; // Add for Alpaca API testing
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -50,6 +51,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/market-data-test',
         name: 'market-data-test',
         builder: (context, state) => const MarketDataTestPage(),
+      ),
+      
+      // Alpaca API Page (for development)
+      GoRoute(
+        path: '/alpaca-api',
+        name: 'alpaca-api',
+        builder: (context, state) => const AlpacaApiPage(),
       ),
       
       // Splash Screen

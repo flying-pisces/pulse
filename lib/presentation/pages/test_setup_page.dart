@@ -509,6 +509,13 @@ class _TestSetupPageState extends ConsumerState<TestSetupPage> {
                           icon: const Icon(Icons.show_chart),
                           label: const Text('Market Data Test'),
                         ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.go('/alpaca-api');
+                          },
+                          icon: const Icon(Icons.api),
+                          label: const Text('Alpaca API'),
+                        ),
                       ],
                     ),
                   ],
