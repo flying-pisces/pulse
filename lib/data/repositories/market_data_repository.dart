@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../datasources/alpaca_api_service.dart';
+import '../services/alpaca_api_service.dart';
 import '../models/market_data_models.dart';
 
 // Abstract Repository Interface

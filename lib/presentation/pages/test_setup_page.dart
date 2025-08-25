@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/datasources/pocketbase_service.dart';
+import '../../data/services/pocketbase_service.dart';
 import '../../core/constants/env_config.dart';
 
 /// Test setup page to validate PocketBase connection and basic functionality

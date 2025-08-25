@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketbase/pocketbase.dart';
-import '../datasources/pocketbase_service.dart';
+import '../services/pocketbase_service.dart';
 import '../models/market_data_models.dart';
 import '../../domain/entities/user.dart';
 

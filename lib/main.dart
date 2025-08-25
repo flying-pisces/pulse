@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/navigation/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -23,8 +22,7 @@ void main() async {
     }
   }
   
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
+  // Using PocketBase for all storage - no local storage initialization needed
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([

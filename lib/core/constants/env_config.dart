@@ -19,10 +19,7 @@ class EnvConfig {
   static String get pocketbaseAdminEmail => dotenv.env['POCKETBASE_ADMIN_EMAIL'] ?? '';
   static String get pocketbaseAdminPassword => dotenv.env['POCKETBASE_ADMIN_PASSWORD'] ?? '';
 
-  // Database Configuration (SQLite - no longer using Supabase)
-  // Keep these for backward compatibility but they won't be used
-  static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
-  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  // Database Configuration - Using PocketBase only
 
   // Google OAuth Configuration
   static String get googleClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
@@ -57,8 +54,7 @@ class EnvConfig {
   static bool get hasPocketbaseAdminCredentials => 
       pocketbaseAdminEmail.isNotEmpty && pocketbaseAdminPassword.isNotEmpty;
   
-  // Deprecated - using SQLite now
-  static bool get hasSupabaseCredentials => false;
+  // Using PocketBase for all database operations
   
   static bool get hasGoogleOAuthCredentials => 
       googleClientId.isNotEmpty;
@@ -74,7 +70,6 @@ class EnvConfig {
     'alpaca_credentials': hasAlpacaCredentials,
     'pocketbase_credentials': hasPocketbaseCredentials,
     'pocketbase_admin': hasPocketbaseAdminCredentials,
-    'supabase_credentials': hasSupabaseCredentials,
     'google_oauth': hasGoogleOAuthCredentials,
     'apple_oauth': hasAppleOAuthCredentials,
     'firebase': hasFirebaseCredentials,
@@ -89,7 +84,6 @@ class EnvConfig {
     'has_alpaca_credentials': hasAlpacaCredentials,
     'has_pocketbase_credentials': hasPocketbaseCredentials,
     'has_pocketbase_admin': hasPocketbaseAdminCredentials,
-    'has_supabase_credentials': hasSupabaseCredentials,
     'has_google_oauth': hasGoogleOAuthCredentials,
     'has_apple_oauth': hasAppleOAuthCredentials,
     'has_firebase': hasFirebaseCredentials,
@@ -102,7 +96,6 @@ class EnvConfig {
     bool requireAlpaca = false,
     bool requirePocketBase = false,
     bool requirePocketBaseAdmin = false,
-    bool requireSupabase = false,
     bool requireGoogleOAuth = false,
     bool requireAppleOAuth = false,
     bool requireFirebase = false,
@@ -119,10 +112,6 @@ class EnvConfig {
 
     if (requirePocketBaseAdmin && !hasPocketbaseAdminCredentials) {
       missing.addAll(['POCKETBASE_ADMIN_EMAIL', 'POCKETBASE_ADMIN_PASSWORD']);
-    }
-
-    if (requireSupabase && !hasSupabaseCredentials) {
-      missing.addAll(['SUPABASE_URL', 'SUPABASE_ANON_KEY']);
     }
 
     if (requireGoogleOAuth && !hasGoogleOAuthCredentials) {

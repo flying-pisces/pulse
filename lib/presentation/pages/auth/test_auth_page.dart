@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/datasources/auth_service.dart';
-import '../../../data/datasources/local_database_service.dart';
-import '../../../data/datasources/test_data_service.dart';
+import '../../../data/services/auth_service.dart';
 import '../../../domain/entities/user.dart';
 
 class TestAuthPage extends ConsumerStatefulWidget {

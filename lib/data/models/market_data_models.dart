@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'market_data_models.g.dart';
