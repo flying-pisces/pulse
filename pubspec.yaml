@@ -22,6 +22,7 @@ dependencies:
   go_router: ^14.2.7
   
   # HTTP & API
+  http: ^1.2.2
   dio: ^5.4.3+1
   retrofit: ^4.1.0
   json_annotation: ^4.8.1
@@ -64,7 +65,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   
   # Backend & Database
-  pocketbase: ^0.18.2
+  pocketbase: ^0.23.0
   
   # Device & Security
   device_info_plus: ^10.1.0

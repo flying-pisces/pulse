@@ -1,9 +1,8 @@
-import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:pocketbase/pocketbase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import '../../core/constants/env_config.dart';
-import '../models/market_data_models.dart';
 
 /// PocketBase service for backend communication
 class PocketBaseService {
@@ -13,8 +12,7 @@ class PocketBaseService {
   PocketBaseService() {
     _pb = PocketBase(EnvConfig.pocketbaseUrl);
     
-    // Enable auto cancellation for pending requests on route change
-    _pb.cancelAllRequests();
+    // PocketBase client initialized
   }
 
   /// Get PocketBase instance
@@ -82,7 +80,11 @@ class PocketBaseService {
     try {
       final authData = await _pb.collection('users').authWithOAuth2(
         provider,
-        createData: createData,
+        (Uri url) {
+          // Handle redirect URL - in a real app, you'd open this URL
+          _logger.i('OAuth redirect URL: $url');
+        },
+        createData: createData ?? {},
       );
       _logger.i('OAuth sign in successful: ${authData.record.id}');
       return authData;
@@ -191,8 +193,13 @@ class PocketBaseService {
   }
 
   /// Subscribe to signals real-time updates
-  Stream<RecordModel> subscribeToSignals({String? filter}) {
-    return _pb.collection('signals').subscribe(
+  Future<void> subscribeToSignals({
+    String? filter,
+    required Function(RecordSubscriptionEvent) callback,
+  }) async {
+    await _pb.collection('signals').subscribe(
+      '*',
+      callback,
       filter: filter,
     );
   }
@@ -326,26 +333,31 @@ class PocketBaseService {
   }
 
   /// Subscribe to watchlist real-time updates
-  Stream<RecordModel> subscribeToWatchlist() {
+  Future<void> subscribeToWatchlist({
+    required Function(RecordSubscriptionEvent) callback,
+  }) async {
     if (!isAuthenticated) throw Exception('User not authenticated');
     
     final filter = 'userId = "${currentUserId}"';
-    return _pb.collection('watchlistItems').subscribe(filter: filter);
+    await _pb.collection('watchlistItems').subscribe(
+      '*',
+      callback,
+      filter: filter,
+    );
   }
 
   /// Utility Methods
   
   /// Get file URL for uploaded files
   String getFileUrl(RecordModel record, String filename, {String thumb = ''}) {
-    return _pb.getFileUrl(record, filename, thumb: thumb);
+    return _pb.files.getURL(record, filename, thumb: thumb).toString();
   }
 
   /// Upload file
   Future<RecordModel> uploadFile(String collection, String recordId, String fieldName, String filePath) async {
     try {
-      final record = await _pb.collection(collection).update(recordId, files: [
-        http.MultipartFile.fromPath(fieldName, filePath),
-      ]);
+      final multipartFile = await http.MultipartFile.fromPath(fieldName, filePath);
+      final record = await _pb.collection(collection).update(recordId, files: [multipartFile]);
       return record;
     } catch (e) {
       _logger.e('Failed to upload file: $e');
@@ -366,7 +378,8 @@ class PocketBaseService {
 
   /// Dispose resources
   void dispose() {
-    _pb.cancelAllRequests();
+    // Note: cancelAllRequests() is not available in this PocketBase version
+    // The connection will be cleaned up automatically
   }
 }
 
