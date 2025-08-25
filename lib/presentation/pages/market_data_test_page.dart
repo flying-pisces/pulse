@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/market_data_provider.dart';
+import '../providers/signal_generation_provider.dart';
 import '../../core/constants/env_config.dart';
 import '../../data/models/market_data_models.dart';
+import '../../data/services/signal_generation_service.dart';
 
 class MarketDataTestPage extends ConsumerStatefulWidget {
   const MarketDataTestPage({super.key});
@@ -19,6 +21,7 @@ class _MarketDataTestPageState extends ConsumerState<MarketDataTestPage> {
     final marketDataState = ref.watch(marketDataProvider);
     final connectionStatus = ref.watch(marketDataConnectionProvider);
     final accountInfo = ref.watch(accountInfoProvider);
+    final signalsState = ref.watch(generatedSignalsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -53,6 +56,10 @@ class _MarketDataTestPageState extends ConsumerState<MarketDataTestPage> {
             
             // Market Data Testing
             _buildMarketDataCard(marketDataState),
+            const SizedBox(height: 16),
+            
+            // Generated Signals
+            _buildSignalsCard(signalsState),
             const SizedBox(height: 16),
             
             // Test Actions
@@ -280,6 +287,79 @@ class _MarketDataTestPageState extends ConsumerState<MarketDataTestPage> {
     );
   }
 
+  Widget _buildSignalsCard(GeneratedSignalsState signalsState) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'Generated Signals',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                if (signalsState.isLoading)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else
+                  Text(
+                    '${signalsState.signals.length} signals',
+                    style: TextStyle(
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            if (signalsState.isLoading && signalsState.signals.isEmpty)
+              const Text('Generating signals...')
+            else if (signalsState.error != null)
+              Text(
+                'Error: ${signalsState.error}',
+                style: TextStyle(color: Colors.red[700]),
+              )
+            else if (signalsState.signals.isEmpty)
+              const Text('No signals generated yet')
+            else
+              Column(
+                children: signalsState.signals.take(3).map((signal) {
+                  return ListTile(
+                    leading: Icon(
+                      _getSignalIcon(signal.type),
+                      color: _getSignalColor(signal.type),
+                    ),
+                    title: Text(signal.title),
+                    subtitle: Text('${signal.symbol} • ${signal.confidenceString} confidence'),
+                    trailing: Text(
+                      signal.changeString,
+                      style: TextStyle(
+                        color: signal.isPositive ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              
+            if (signalsState.signals.length > 3)
+              Text(
+                '... and ${signalsState.signals.length - 3} more signals',
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTestActionsCard() {
     return Card(
       child: Padding(
@@ -296,6 +376,19 @@ class _MarketDataTestPageState extends ConsumerState<MarketDataTestPage> {
               spacing: 8,
               runSpacing: 8,
               children: [
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await ref.read(generatedSignalsProvider.notifier).generateSignals(
+                      maxSignals: 10,
+                    );
+                  },
+                  icon: const Icon(Icons.auto_fix_high),
+                  label: const Text('Generate Signals'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
                 ElevatedButton(
                   onPressed: () {
                     ref.read(marketDataProvider.notifier).loadSnapshots(testSymbols);
@@ -343,5 +436,44 @@ class _MarketDataTestPageState extends ConsumerState<MarketDataTestPage> {
         ),
       ),
     );
+  }
+
+  // Helper methods for signal display
+  IconData _getSignalIcon(SignalType type) {
+    switch (type) {
+      case SignalType.preMarket:
+        return Icons.wb_sunny;
+      case SignalType.earnings:
+        return Icons.assessment;
+      case SignalType.momentum:
+        return Icons.trending_up;
+      case SignalType.volume:
+        return Icons.volume_up;
+      case SignalType.breakout:
+        return Icons.open_in_full;
+      case SignalType.options:
+        return Icons.swap_calls;
+      case SignalType.crypto:
+        return Icons.currency_bitcoin;
+    }
+  }
+
+  Color _getSignalColor(SignalType type) {
+    switch (type) {
+      case SignalType.preMarket:
+        return Colors.orange;
+      case SignalType.earnings:
+        return Colors.blue;
+      case SignalType.momentum:
+        return Colors.green;
+      case SignalType.volume:
+        return Colors.purple;
+      case SignalType.breakout:
+        return Colors.red;
+      case SignalType.options:
+        return Colors.indigo;
+      case SignalType.crypto:
+        return Colors.amber;
+    }
   }
 }
